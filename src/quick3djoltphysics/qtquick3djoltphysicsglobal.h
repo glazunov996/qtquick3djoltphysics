@@ -1,0 +1,24 @@
+#ifndef QTQUICK3DJOLTPHYSICSGLOBAL_H
+#define QTQUICK3DJOLTPHYSICSGLOBAL_H
+
+#include <QtGui/qtguiglobal.h>
+
+QT_BEGIN_NAMESPACE
+
+#ifndef Q_QUICK3DJOLTPHYSICS_EXPORT
+#    ifndef QT_STATIC
+#        if defined(QT_BUILD_QUICK3DJOLTPHYSICS_LIB)
+#            define Q_QUICK3DJOLTPHYSICS_EXPORT Q_DECL_EXPORT
+#        else
+#            define Q_QUICK3DJOLTPHYSICS_EXPORT Q_DECL_IMPORT
+#        endif
+#    else
+#        define Q_QUICK3DJOLTPHYSICS_EXPORT
+#    endif
+#endif
+
+void Q_QUICK3DJOLTPHYSICS_EXPORT qml_register_types_QtQuick3D_JoltPhysics();
+
+QT_END_NAMESPACE
+
+#endif // QTQUICK3DJOLTPHYSICSGLOBAL_H

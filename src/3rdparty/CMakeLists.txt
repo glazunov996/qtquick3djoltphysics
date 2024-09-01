@@ -1,0 +1,2 @@
+add_subdirectory(JoltPhysics)
+qt_install_3rdparty_library_wrap_config_extra_file(BundledJoltPhysics)
