@@ -556,6 +556,8 @@ void Body::sync()
 
     const QQuick3DNode *parentNode = static_cast<QQuick3DNode *>(parentItem());
 
+    m_syncing = true;
+
     if (!parentNode) {
         setPosition(qtPosition);
         setRotation(qtRotation);
@@ -564,11 +566,13 @@ void Body::sync()
         const auto relativeRotation = parentNode->sceneRotation().inverted() * qtRotation;
         setRotation(relativeRotation);
     }
+
+    m_syncing = false;
 }
 
 void Body::handleScenePositionChanged()
 {
-    if (m_body == nullptr)
+    if (m_body == nullptr || m_syncing)
         return;
 
     auto &bodyInterface = m_jolt->GetBodyInterface();
@@ -578,7 +582,7 @@ void Body::handleScenePositionChanged()
 
 void Body::handleSceneRotationChanged()
 {
-    if (m_body == nullptr)
+    if (m_body == nullptr || m_syncing)
         return;
 
     auto &bodyInterface = m_jolt->GetBodyInterface();

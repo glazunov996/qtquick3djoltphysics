@@ -181,6 +181,8 @@ private:
     JPH::Body *m_body = nullptr;
     JPH::BodyCreationSettings m_bodySettings;
 
+    bool m_syncing = false;
+
     friend class PointConstraint;
     friend class DistanceConstraint;
     friend class HingeConstraint;

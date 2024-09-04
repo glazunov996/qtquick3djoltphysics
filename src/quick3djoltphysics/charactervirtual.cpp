@@ -6,6 +6,7 @@
 CharacterVirtual::CharacterVirtual(QQuick3DNode *parent) : AbstractPhysicsBody(parent)
 {
     connect(this, &QQuick3DNode::upChanged, this, &CharacterVirtual::handleUpChanged);
+    connect(this, &QQuick3DNode::scenePositionChanged, this, &CharacterVirtual::handleScenePositionChanged);
     connect(this, &QQuick3DNode::sceneRotationChanged, this, &CharacterVirtual::handleSceneRotationChanged);
 }
 
@@ -486,11 +487,15 @@ void CharacterVirtual::sync()
     QVector3D position = PhysicsUtils::toQtType(m_character->GetPosition());
     const QQuick3DNode *parentNode = static_cast<QQuick3DNode *>(parentItem());
 
+    m_syncing = true;
+
     if (!parentNode) {
         setPosition(position);
     } else {
         setPosition(parentNode->mapPositionFromScene(position));
     }
+
+    m_syncing = false;
 }
 
 void CharacterVirtual::handleUpChanged()
@@ -499,6 +504,14 @@ void CharacterVirtual::handleUpChanged()
         return;
 
     m_character->SetUp(PhysicsUtils::toJoltType(up()));
+}
+
+void CharacterVirtual::handleScenePositionChanged()
+{
+    if (m_character == nullptr || m_syncing)
+        return;
+
+    m_character->SetPosition(PhysicsUtils::toJoltType(scenePosition()));
 }
 
 void CharacterVirtual::handleSceneRotationChanged()

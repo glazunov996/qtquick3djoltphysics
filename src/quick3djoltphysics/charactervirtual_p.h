@@ -154,6 +154,7 @@ protected:
 
 private slots:
     void handleUpChanged();
+    void handleScenePositionChanged();
     void handleSceneRotationChanged();
 
 private:
@@ -170,6 +171,8 @@ private:
 
     JPH::CharacterVirtual *m_character = nullptr;
     JPH::CharacterVirtualSettings m_characterSettings;
+
+    bool m_syncing = false;
 };
 
 Q_DECLARE_METATYPE(ExtendedUpdateSettings)
