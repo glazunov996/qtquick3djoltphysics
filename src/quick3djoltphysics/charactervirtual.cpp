@@ -10,10 +10,7 @@ CharacterVirtual::CharacterVirtual(QQuick3DNode *parent) : AbstractPhysicsBody(p
     connect(this, &QQuick3DNode::sceneRotationChanged, this, &CharacterVirtual::handleSceneRotationChanged);
 }
 
-CharacterVirtual::~CharacterVirtual()
-{
-    CharacterVirtual::cleanup();
-}
+CharacterVirtual::~CharacterVirtual() = default;
 
 QVector4D CharacterVirtual::supportingVolume() const
 {
@@ -401,7 +398,7 @@ void CharacterVirtual::extendedUpdate(float deltaTime,
         update_settings.mWalkStairsStepUp = PhysicsUtils::toJoltType(updateSettings->walkStairsStepUp);
         update_settings.mWalkStairsMinStepForward = updateSettings->walkStairsMinStepForward;
         update_settings.mWalkStairsStepForwardTest = updateSettings->walkStairsStepForwardTest;
-        update_settings.mWalkStairsCosAngleForwardContact = updateSettings->walkStairsCosAngleForwardContact;
+        update_settings.mWalkStairsCosAngleForwardContact = qCos(qDegreesToRadians(updateSettings->walkStairsCosAngleForwardContact));
         update_settings.mWalkStairsStepDownExtra = PhysicsUtils::toJoltType(updateSettings->walkStairsStepDownExtra);
     }
 
@@ -475,7 +472,9 @@ void CharacterVirtual::updateJoltObject()
 
 void CharacterVirtual::cleanup()
 {
-    delete m_character;
+    if (m_character)
+        delete m_character;
+
     m_character = nullptr;
 }
 

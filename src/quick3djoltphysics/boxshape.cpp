@@ -24,7 +24,7 @@ void BoxShape::setExtents(const QVector3D &extents)
         return;
 
     m_extents = extents;
-    updateJoltShape();
+    updateJoltShapeIfInitialized();
 
     emit extentsChanged(m_extents);
     emit changed();
@@ -32,6 +32,6 @@ void BoxShape::setExtents(const QVector3D &extents)
 
 void BoxShape::updateJoltShape()
 {
-    m_shape = new JPH::OffsetCenterOfMassShape(new JPH::BoxShape(PhysicsUtils::toJoltType(m_extents * 0.5f)), PhysicsUtils::toJoltType(offsetCenterOfMass()));
+    m_shape = new JPH::OffsetCenterOfMassShape(new JPH::BoxShape(PhysicsUtils::toJoltType(m_extents * 0.5f)), PhysicsUtils::toJoltType(m_offsetCenterOfMass));
     m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
 }

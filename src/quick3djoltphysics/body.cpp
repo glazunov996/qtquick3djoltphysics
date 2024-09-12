@@ -14,10 +14,7 @@ Body::Body(QQuick3DNode *parent) : AbstractPhysicsBody(parent)
     connect(this, &QQuick3DNode::sceneRotationChanged, this, &Body::handleSceneRotationChanged);
 }
 
-Body::~Body()
-{
-    Body::cleanup();
-}
+Body::~Body() = default;
 
 int Body::bodyID() const
 {

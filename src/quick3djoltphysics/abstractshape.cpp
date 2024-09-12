@@ -20,15 +20,9 @@ void AbstractShape::setDensity(float density)
         return;
 
     m_density = density;
-    if (m_shape == nullptr)
-        updateJoltShape();
 
-    if (m_shape->GetType() == JPH::EShapeType::Convex) {
-        auto *convexShape = reinterpret_cast<JPH::ConvexShape *>(m_shape.GetPtr());
-        convexShape->SetDensity(m_density);
-    } else {
-        qWarning() << "Density could be set only for convex shape";
-    }
+    updateJoltShapeIfInitialized();
+    updateConvexShapeDensity();
 
     emit densityChanged(m_density);
     emit changed();
@@ -45,23 +39,46 @@ void AbstractShape::setOffsetCenterOfMass(const QVector3D &offsetCenterOfMass)
         return;
 
     m_offsetCenterOfMass = offsetCenterOfMass;
-    updateJoltShape();
+    updateJoltShapeIfInitialized();
 
     emit offsetCenterOfMassChanged(m_offsetCenterOfMass);
     emit changed();
 }
 
-void AbstractShape::handleScaleChanged()
+void AbstractShape::updateJoltShapeIfInitialized()
 {
-    updateJoltShape();
+    if (!m_shapeInitialized)
+        return;
 
-    emit changed();
+    updateJoltShape();
 }
 
 JPH::Ref<JPH::Shape> AbstractShape::getJoltShape()
 {
-    if (m_shape == nullptr)
+    m_shapeInitialized = true;
+
+    if (m_shape == nullptr) {
         updateJoltShape();
+        updateConvexShapeDensity();
+    }
 
     return m_shape;
+}
+
+void AbstractShape::handleScaleChanged()
+{
+    updateJoltShapeIfInitialized();
+
+    emit changed();
+}
+
+void AbstractShape::updateConvexShapeDensity()
+{
+    if (m_shape == nullptr)
+        return;
+
+    if (m_shape->GetType() == JPH::EShapeType::Convex) {
+        auto *convexShape = reinterpret_cast<JPH::ConvexShape *>(m_shape.GetPtr());
+        convexShape->SetDensity(m_density);
+    }
 }

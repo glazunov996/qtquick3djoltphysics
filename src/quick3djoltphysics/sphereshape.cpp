@@ -23,7 +23,7 @@ void SphereShape::setDiameter(float diameter)
         return;
 
     m_diameter = diameter;
-    updateJoltShape();
+    updateJoltShapeIfInitialized();
 
     emit diameterChanged(m_diameter);
     emit changed();
@@ -34,6 +34,6 @@ void SphereShape::updateJoltShape()
     JPH::SphereShapeSettings shapeSettings(m_diameter * 0.5f);
     auto shapeResult = shapeSettings.Create();
     m_shape = shapeResult.Get();
-    m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(offsetCenterOfMass()));
+    m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(m_offsetCenterOfMass));
     m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
 }

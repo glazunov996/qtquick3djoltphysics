@@ -5,10 +5,7 @@ Character::Character(QQuick3DNode *parent) : AbstractPhysicsBody(parent)
 {
 }
 
-Character::~Character()
-{
-    Character::cleanup();
-}
+Character::~Character() = default;
 
 int Character::bodyID() const
 {

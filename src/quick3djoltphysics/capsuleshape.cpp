@@ -24,7 +24,7 @@ void CapsuleShape::setDiameter(float diameter)
         return;
 
     m_diameter = diameter;
-    updateJoltShape();
+    updateJoltShapeIfInitialized();
 
     emit diameterChanged(m_diameter);
     emit changed();
@@ -41,7 +41,7 @@ void CapsuleShape::setHeight(float height)
         return;
 
     m_height = height;
-    updateJoltShape();
+    updateJoltShapeIfInitialized();
 
     emit heightChanged(m_height);
     emit changed();
@@ -52,6 +52,6 @@ void CapsuleShape::updateJoltShape()
     JPH::CapsuleShapeSettings capsuleSettings(m_height * 0.5, m_diameter * 0.5);
     auto shapeResult = capsuleSettings.Create();
     m_shape = shapeResult.Get();
-    m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(offsetCenterOfMass()));
+    m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(m_offsetCenterOfMass));
     m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
 }

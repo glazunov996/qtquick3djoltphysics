@@ -36,8 +36,10 @@ PhysicsSystem::PhysicsSystem(QObject *parent)
 
 PhysicsSystem::~PhysicsSystem()
 {
-    for (auto physicsNode : std::as_const(m_physicsNodes))
+    for (auto *physicsNode : std::as_const(m_physicsNodes))
         physicsNode->cleanup();
+
+    m_physicsNodes.clear();
 
     g_factoryRefCount--;
     if (g_factoryRefCount == 0) {
@@ -103,8 +105,7 @@ void PhysicsSystem::registerPhysicsNode(AbstractPhysicsNode *physicsNode)
 
 void PhysicsSystem::unRegisterPhysicsNode(AbstractPhysicsNode *physicsNode)
 {
-    auto *physicsSystem = getPhysicsSystem(physicsNode);
-    if (physicsSystem) {
+    for (auto *physicsSystem : *g_physicsSystems) {
         physicsSystem->m_physicsNodes.removeAll(physicsNode);
         physicsNode->cleanup();
     }
@@ -394,9 +395,9 @@ void PhysicsSystem::setScene(QQuick3DNode *scene)
 
     m_scene = scene;
 
-    auto physicsBodies = m_physicsNodes;
-    for (auto body : std::as_const(physicsBodies))
-        unRegisterPhysicsNode(body);
+    auto physicsNodes = m_physicsNodes;
+    for (auto node : std::as_const(physicsNodes))
+        unRegisterPhysicsNode(node);
 
     m_physicsNodes.clear();
 

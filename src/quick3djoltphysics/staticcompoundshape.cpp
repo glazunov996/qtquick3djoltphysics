@@ -35,7 +35,7 @@ void StaticCompoundShape::updateJoltShape()
 
     auto shapeResult = staticCompoundSettings.Create();
     m_shape = shapeResult.Get();
-    m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(offsetCenterOfMass()));
+    m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(m_offsetCenterOfMass));
     m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
 }
 

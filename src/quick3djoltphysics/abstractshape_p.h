@@ -32,17 +32,21 @@ signals:
     void changed();
 
 protected:
+    void updateJoltShapeIfInitialized();
     virtual void updateJoltShape() = 0;
+    virtual JPH::Ref<JPH::Shape> getJoltShape();
+
     JPH::Ref<JPH::Shape> m_shape = nullptr;
+    bool m_shapeInitialized = false;
+    QVector3D m_offsetCenterOfMass;
 
 private slots:
     void handleScaleChanged();
 
 private:
-    virtual JPH::Ref<JPH::Shape> getJoltShape();
+    void updateConvexShapeDensity();
 
     float m_density = 1000.0f;
-    QVector3D m_offsetCenterOfMass;
 
     friend class Body;
     friend class StaticCompoundShape;
