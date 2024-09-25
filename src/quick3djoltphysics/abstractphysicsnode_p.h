@@ -30,6 +30,8 @@ protected:
     JPH::PhysicsSystem *m_jolt = nullptr;
     JPH::TempAllocator *m_tempAllocator = nullptr;
 
+    bool m_syncing = false;
+
 private:
     void init(JPH::PhysicsSystem *jolt, JPH::TempAllocator *tempAllocator);
     friend class PhysicsSystem;

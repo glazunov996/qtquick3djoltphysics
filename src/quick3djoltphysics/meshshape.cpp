@@ -494,7 +494,7 @@ void MeshShape::setSource(const QUrl &newSource)
     if (m_geometry == nullptr && !newSource.isEmpty())
         m_mesh = MeshManager::getMesh(m_meshSource, this);
 
-    updateJoltShapeIfInitialized();
+    updateJoltShape();
 
     emit sourceChanged();
     emit changed();
@@ -522,14 +522,14 @@ void MeshShape::setGeometry(QQuick3DGeometry *newGeometry)
     m_geometrySignalConnection = connect(m_geometry, &QQuick3DGeometry::geometryChanged, this,
             [this]
     {
-        updateJoltShapeIfInitialized();
+        updateJoltShape();
     });
 
     // New geometry means we get a new mesh so deref the old one
     MeshManager::releaseMesh(m_mesh);
     m_mesh = MeshManager::getMesh(m_geometry);
 
-    updateJoltShapeIfInitialized();
+    updateJoltShape();
 
     emit geometryChanged();
     emit changed();
@@ -546,6 +546,5 @@ void MeshShape::updateJoltShape()
 
     auto shapeResult = meshShapeSettings->Create();
     m_shape = shapeResult.Get();
-    m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(m_offsetCenterOfMass));
     m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
 }

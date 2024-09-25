@@ -3,8 +3,6 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/CylinderShape.h>
-#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
-#include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
 
 CylinderShape::CylinderShape(QQuick3DNode *parent) : AbstractShape(parent)
 {
@@ -23,7 +21,7 @@ void CylinderShape::setDiameter(float diameter)
         return;
 
     m_diameter = diameter;
-    updateJoltShapeIfInitialized();
+    updateJoltShape();
 
     emit diameterChanged(m_diameter);
     emit changed();
@@ -40,7 +38,7 @@ void CylinderShape::setHeight(float height)
         return;
 
     m_height = height;
-    updateJoltShapeIfInitialized();
+    updateJoltShape();
 
     emit heightChanged(m_height);
     emit changed();
@@ -48,9 +46,12 @@ void CylinderShape::setHeight(float height)
 
 void CylinderShape::updateJoltShape()
 {
-    JPH::CylinderShapeSettings cylinderSettings(m_height * 0.5, m_diameter * 0.5);
-    auto shapeResult = cylinderSettings.Create();
-    m_shape = shapeResult.Get();
-    m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(m_offsetCenterOfMass));
-    m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
+    if (!m_shapeInitialized)
+        return;
+
+    auto s = sceneScale();
+    m_shape = new JPH::CylinderShape(m_height * 0.5f * s.y(), m_diameter * 0.5f * s.y());
+
+    updateConvexShapeDensity();
+    updateOffsetCenterOfMass();
 }

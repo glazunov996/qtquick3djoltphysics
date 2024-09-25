@@ -209,7 +209,6 @@ Item {
             friction: 0.5
             maxSlopeAngle: 45
             supportingVolume: Qt.vector4d(0, 1, 0, -characterRadiusStanding)
-            position: Qt.vector3d(0, 0.975, 0)
             Model {
                 eulerRotation.z: -90
                 geometry: CapsuleGeometry {

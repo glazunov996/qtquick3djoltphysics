@@ -3,9 +3,6 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
-#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
-#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
-#include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
 
 CapsuleShape::CapsuleShape(QQuick3DNode *parent) : AbstractShape(parent)
 {
@@ -24,7 +21,7 @@ void CapsuleShape::setDiameter(float diameter)
         return;
 
     m_diameter = diameter;
-    updateJoltShapeIfInitialized();
+    updateJoltShape();
 
     emit diameterChanged(m_diameter);
     emit changed();
@@ -41,7 +38,7 @@ void CapsuleShape::setHeight(float height)
         return;
 
     m_height = height;
-    updateJoltShapeIfInitialized();
+    updateJoltShape();
 
     emit heightChanged(m_height);
     emit changed();
@@ -49,9 +46,12 @@ void CapsuleShape::setHeight(float height)
 
 void CapsuleShape::updateJoltShape()
 {
-    JPH::CapsuleShapeSettings capsuleSettings(m_height * 0.5, m_diameter * 0.5);
-    auto shapeResult = capsuleSettings.Create();
-    m_shape = shapeResult.Get();
-    m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(m_offsetCenterOfMass));
-    m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
+    if (!m_shapeInitialized)
+        return;
+
+    auto s = sceneScale();
+    m_shape = new JPH::CapsuleShape(m_height * 0.5f * s.y(), m_diameter * 0.5f * s.y());
+
+    updateConvexShapeDensity();
+    updateOffsetCenterOfMass();
 }

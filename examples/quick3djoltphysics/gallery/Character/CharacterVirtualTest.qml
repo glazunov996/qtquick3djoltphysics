@@ -247,7 +247,6 @@ Item {
                     }
                 }
             }
-            position: Qt.vector3d(0, 0.975, 0)
             maxSlopeAngle: 45
             maxStrength: 100
             backFaceMode: CharacterVirtual.CollideWithBackFaces

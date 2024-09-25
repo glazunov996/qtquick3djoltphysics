@@ -1,8 +1,9 @@
 #include "character_p.h"
 #include "physicsutils_p.h"
 
-Character::Character(QQuick3DNode *parent) : AbstractPhysicsBody(parent)
+Character::Character(QQuick3DNode *parent) : AbstractPhysicsCharacter(parent)
 {
+    connect(this, &QQuick3DNode::scenePositionChanged, this, &Character::handleScenePositionChanged);
 }
 
 Character::~Character() = default;
@@ -52,12 +53,12 @@ void Character::setMaxSlopeAngle(float maxSlopeAngle)
     emit maxSlopeAngleChanged(maxSlopeAngle);
 }
 
-unsigned int Character::layer() const
+int Character::layer() const
 {
     return m_characterSettings.mLayer;
 }
 
-void Character::setLayer(unsigned int layer)
+void Character::setLayer(int layer)
 {
     if (m_characterSettings.mLayer == layer)
         return;
@@ -171,17 +172,20 @@ void Character::postSimulation(float maxSeparationDistance)
     m_character->PostSimulation(maxSeparationDistance);
 }
 
-void Character::setShape(AbstractShape *shape, float maxPenetrationDepth)
+bool Character::setShape(AbstractShape *shape, float maxPenetrationDepth)
 {
     if (m_character == nullptr) {
         qWarning() << "Warning: Invoking 'setShape' before character is initialized will have no effect";
-        return;
+        return false;
     }
 
-    m_maxPenetrationDepth = maxPenetrationDepth;
-
-    m_updateShapeNeeded = true;
     AbstractPhysicsBody::setShape(shape);
+
+    const auto &inShape = getRotatedTranslatedJoltShape();
+    if (inShape == nullptr)
+        return false;
+
+    return m_character->SetShape(inShape, maxPenetrationDepth);
 }
 
 void Character::updateJoltObject()
@@ -189,26 +193,23 @@ void Character::updateJoltObject()
     if (m_jolt == nullptr || m_shape == nullptr)
         return;
 
-    if (m_character) {
-        if (m_shapeDirty) {
-            if (m_updateShapeNeeded) {
-                m_updateShapeNeeded = false;
-                m_character->SetShape(m_shape->getJoltShape(), m_maxPenetrationDepth);
-            } else {
-                qWarning() << "Warning: To change character shape, the invokable 'setShape' must be called.";
-            }
-        }
-    } else {
-        m_characterSettings.mShape = m_shape->getJoltShape();
+    if (!m_character) {
+        const auto &shape = getRotatedTranslatedJoltShape();
+        if (shape == nullptr)
+            return;
+
+        m_characterSettings.mShape = shape;
         m_characterSettings.mSupportingVolume = JPH::Plane(PhysicsUtils::toJoltType(m_supportingVolume.toVector3D()), m_supportingVolume.w());
         m_characterSettings.mMaxSlopeAngle = qDegreesToRadians(m_maxSlopeAngle);
 
         m_character = new JPH::Character(
-            &m_characterSettings, PhysicsUtils::toJoltType(scenePosition()), PhysicsUtils::toJoltType(sceneRotation()), 0, m_jolt);
+                &m_characterSettings, PhysicsUtils::toJoltType(scenePosition()), PhysicsUtils::toJoltType(sceneRotation()), 0, m_jolt);
         m_character->AddToPhysicsSystem();
 
         m_bodyID = static_cast<int>(m_character->GetBodyID().GetIndexAndSequenceNumber());
         emit bodyIDChanged(m_bodyID);
+
+        sync();
     }
 
     m_shapeDirty = false;
@@ -229,12 +230,26 @@ void Character::sync()
     if (m_character == nullptr)
         return;
 
-    QVector3D position = PhysicsUtils::toQtType(m_character->GetPosition());
+    QVector3D position = PhysicsUtils::toQtType(m_character->GetCenterOfMassPosition());
     const QQuick3DNode *parentNode = static_cast<QQuick3DNode *>(parentItem());
+
+    m_syncing = true;
 
     if (!parentNode) {
         setPosition(position);
     } else {
         setPosition(parentNode->mapPositionFromScene(position));
     }
+
+    m_syncing = false;
+}
+
+void Character::handleScenePositionChanged()
+{
+    if (m_character == nullptr || m_syncing)
+        return;
+
+    m_character->SetPosition(PhysicsUtils::toJoltType(scenePosition()));
+
+    sync();
 }

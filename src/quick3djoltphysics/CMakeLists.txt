@@ -11,6 +11,7 @@ qt_internal_add_qml_module(Quick3DJoltPhysics
         NO_PLUGIN_OPTIONAL
         NO_GENERATE_PLUGIN_SOURCE
     SOURCES
+        abstractphysicscharacter_p.h abstractphysicscharacter.cpp
         abstractphysicsconstraint_p.h abstractphysicsconstraint.cpp
         abstractphysicsbody_p.h abstractphysicsbody.cpp
         abstractphysicsnode_p.h abstractphysicsnode.cpp

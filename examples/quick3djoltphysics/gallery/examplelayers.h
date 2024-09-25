@@ -10,7 +10,7 @@ class ExampleObjectLayerPairFilter : public AbstractObjectLayerPairFilter
 public:
     ExampleObjectLayerPairFilter() = default;
 
-    bool shouldCollide(unsigned int obj1, unsigned int obj2) const override;
+    bool shouldCollide(quint16 obj1, quint16 obj2) const override;
 };
 
 class ExampleBroadPhaseLayer : public AbstractBroadPhaseLayer
@@ -21,10 +21,10 @@ public:
     ExampleBroadPhaseLayer();
 
     unsigned int getNumBroadPhaseLayers() const override;
-    unsigned int getBroadPhaseLayer(unsigned int layer) const override;
+    quint8 getBroadPhaseLayer(quint16 layer) const override;
 
 private:
-    unsigned int m_objectToBroadPhase[4];
+    quint8 m_objectToBroadPhase[4];
 };
 
 class ExampleObjectVsBroadPhaseLayerFilter : public AbstractObjectVsBroadPhaseLayerFilter
@@ -34,7 +34,7 @@ class ExampleObjectVsBroadPhaseLayerFilter : public AbstractObjectVsBroadPhaseLa
 public:
     ExampleObjectVsBroadPhaseLayerFilter() = default;
 
-    bool shouldCollide(unsigned int layer1, unsigned int layer2) const override;
+    bool shouldCollide(quint16 layer1, quint8 layer2) const override;
 };
 
 #endif // SAMPLELAYERS_H

@@ -23,7 +23,7 @@ class Q_QUICK3DJOLTPHYSICS_EXPORT Body : public AbstractPhysicsBody
     Q_PROPERTY(CollisionGroup *collisionGroup READ collisionGroup WRITE setCollisionGroup NOTIFY collisionGroupChanged)
     Q_PROPERTY(MotionType motionType READ motionType WRITE setMotionType NOTIFY motionTypeChanged)
     Q_PROPERTY(MotionQuality motionQuality READ motionQuality WRITE setMotionQuality NOTIFY motionQualityChanged)
-    Q_PROPERTY(unsigned int objectLayer READ objectLayer WRITE setObjectLayer NOTIFY objectLayerChanged)
+    Q_PROPERTY(int objectLayer READ objectLayer WRITE setObjectLayer NOTIFY objectLayerChanged)
     Q_PROPERTY(bool usedInSimulation READ usedInSimulation WRITE setUsedInSimulation NOTIFY usedInSimulationChanged)
     Q_PROPERTY(bool allowSleeping READ allowSleeping WRITE setAllowSleeping NOTIFY allowSleepingChanged)
     Q_PROPERTY(AllowedDOFs allowedDOFs READ allowedDOFs WRITE setAllowedDOFs NOTIFY allowedDOFsChanged)
@@ -80,8 +80,8 @@ public:
     void setMotionType(MotionType motionType);
     MotionQuality motionQuality() const;
     void setMotionQuality(MotionQuality motionQuality);
-    unsigned int objectLayer() const;
-    void setObjectLayer(unsigned int objectLayer);
+    int objectLayer() const;
+    void setObjectLayer(int objectLayer);
     bool usedInSimulation() const;
     void setUsedInSimulation(bool usedInSimulation);
     bool allowSleeping() const;
@@ -132,11 +132,11 @@ public:
     Q_INVOKABLE void moveKinematic(const QVector3D &targetPosition, const QQuaternion &targetRotation, float deltaTime);
 
 signals:
-    void bodyIDChanged(unsigned int bodyID);
+    void bodyIDChanged(int bodyID);
     void collisionGroupChanged(CollisionGroup *collisionGroup);
     void motionTypeChanged(MotionType motionType);
     void motionQualityChanged(MotionQuality motionQuality);
-    void objectLayerChanged(unsigned int objectLayer);
+    void objectLayerChanged(int objectLayer);
     void usedInSimulationChanged(bool usedInSimulation);
     void allowSleepingChanged(bool allowSleeping);
 
@@ -180,8 +180,6 @@ private:
     int m_bodyID = -1;
     JPH::Body *m_body = nullptr;
     JPH::BodyCreationSettings m_bodySettings;
-
-    bool m_syncing = false;
 
     friend class PointConstraint;
     friend class DistanceConstraint;

@@ -4,8 +4,6 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
-#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
-#include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
 
 BoxShape::BoxShape(QQuick3DNode *parent) : AbstractShape(parent)
 {
@@ -24,7 +22,7 @@ void BoxShape::setExtents(const QVector3D &extents)
         return;
 
     m_extents = extents;
-    updateJoltShapeIfInitialized();
+    updateJoltShape();
 
     emit extentsChanged(m_extents);
     emit changed();
@@ -32,6 +30,11 @@ void BoxShape::setExtents(const QVector3D &extents)
 
 void BoxShape::updateJoltShape()
 {
-    m_shape = new JPH::OffsetCenterOfMassShape(new JPH::BoxShape(PhysicsUtils::toJoltType(m_extents * 0.5f)), PhysicsUtils::toJoltType(m_offsetCenterOfMass));
-    m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
+    if (!m_shapeInitialized)
+        return;
+
+    m_shape = new JPH::BoxShape(PhysicsUtils::toJoltType(m_extents * sceneScale() * 0.5f));
+
+    updateConvexShapeDensity();
+    updateOffsetCenterOfMass();
 }

@@ -179,6 +179,8 @@ void PhysicsSystem::setRunning(bool running)
     else
         m_animation->stop();
 
+    m_timeInt = 0;
+
     emit runningChanged(m_running);
 }
 

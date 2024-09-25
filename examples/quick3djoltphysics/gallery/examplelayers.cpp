@@ -7,7 +7,7 @@ static constexpr int DEBRIS = 2;
 static constexpr int SENSOR = 3;
 }
 
-bool ExampleObjectLayerPairFilter::shouldCollide(unsigned int obj1, unsigned int obj2) const
+bool ExampleObjectLayerPairFilter::shouldCollide(quint16 obj1, quint16 obj2) const
 {
     switch (obj1) {
     case Layers::NON_MOVING:
@@ -37,12 +37,12 @@ unsigned int ExampleBroadPhaseLayer::getNumBroadPhaseLayers() const
     return 4;
 }
 
-unsigned int ExampleBroadPhaseLayer::getBroadPhaseLayer(unsigned int layer) const
+quint8 ExampleBroadPhaseLayer::getBroadPhaseLayer(quint16 layer) const
 {
     return m_objectToBroadPhase[layer];
 }
 
-bool ExampleObjectVsBroadPhaseLayerFilter::shouldCollide(unsigned int layer1, unsigned int layer2) const
+bool ExampleObjectVsBroadPhaseLayerFilter::shouldCollide(quint16 layer1, quint8 layer2) const
 {
     switch (layer1) {
     case Layers::NON_MOVING:

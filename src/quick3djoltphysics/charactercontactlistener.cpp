@@ -59,7 +59,7 @@ public:
     {
         Q_UNUSED(inContactMaterial);
 
-        const bool isSlopeToSteep = inCharacter->IsSlopeTooSteep(inContactNormal);
+        const bool isSlopeTooSteep = inCharacter->IsSlopeTooSteep(inContactNormal);
 
         auto newCharacterVelocity = PhysicsUtils::toQtType(ioNewCharacterVelocity);
 
@@ -70,7 +70,7 @@ public:
                             PhysicsUtils::toQtType(inContactVelocity),
                             PhysicsUtils::toQtType(inCharacterVelocity),
                             newCharacterVelocity,
-                            isSlopeToSteep);
+                            isSlopeTooSteep);
 
         ioNewCharacterVelocity = PhysicsUtils::toJoltType(newCharacterVelocity);
     }

@@ -24,6 +24,9 @@ void ConvexHullShape::updateJoltShape()
 
     auto shapeResult = convexHullShapeSettings->Create();
     m_shape = shapeResult.Get();
-    m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(m_offsetCenterOfMass));
+
+    updateConvexShapeDensity();
+    updateOffsetCenterOfMass();
+
     m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
 }

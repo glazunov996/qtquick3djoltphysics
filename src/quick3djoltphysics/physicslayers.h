@@ -20,7 +20,7 @@ public:
     explicit AbstractObjectLayerPairFilter(QObject *parent = nullptr);
     ~AbstractObjectLayerPairFilter() override;
 
-    virtual bool shouldCollide(unsigned int obj1, unsigned int obj2) const = 0;
+    virtual bool shouldCollide(quint16 obj1, quint16 obj2) const = 0;
 
 private:
     const JPH::ObjectLayerPairFilter &impl() const { return *m_impl; }
@@ -39,7 +39,7 @@ public:
     ~AbstractBroadPhaseLayer() override;
 
     virtual unsigned int getNumBroadPhaseLayers() const = 0;
-    virtual unsigned int getBroadPhaseLayer(unsigned int layer) const = 0;
+    virtual quint8 getBroadPhaseLayer(quint16 layer) const = 0;
 
 private:
     const JPH::BroadPhaseLayerInterface &impl() const { return *m_impl; }
@@ -57,7 +57,7 @@ public:
     explicit AbstractObjectVsBroadPhaseLayerFilter(QObject *parent = nullptr);
     ~AbstractObjectVsBroadPhaseLayerFilter() override;
 
-    virtual bool shouldCollide(unsigned int layer1, unsigned int layer2) const = 0;
+    virtual bool shouldCollide(quint16 layer1, quint8 layer2) const = 0;
 
 private:
     const JPH::ObjectVsBroadPhaseLayerFilter &impl() const { return *m_impl; }

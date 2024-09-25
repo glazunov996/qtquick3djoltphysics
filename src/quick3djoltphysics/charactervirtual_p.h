@@ -1,7 +1,7 @@
 #ifndef CHARACTERVIRTUAL_P_H
 #define CHARACTERVIRTUAL_P_H
 
-#include "abstractphysicsbody_p.h"
+#include "abstractphysicscharacter_p.h"
 #include "charactercontactlistener.h"
 
 #include <QtQuick3DJoltPhysics/qtquick3djoltphysicsglobal.h>
@@ -36,7 +36,7 @@ public:
     QVector3D walkStairsStepDownExtra;
 };
 
-class Q_QUICK3DJOLTPHYSICS_EXPORT CharacterVirtual : public AbstractPhysicsBody
+class Q_QUICK3DJOLTPHYSICS_EXPORT CharacterVirtual : public AbstractPhysicsCharacter
 {
     Q_OBJECT
     Q_PROPERTY(QVector4D supportingVolume READ supportingVolume WRITE setSupportingVolume NOTIFY supportingVolumeChanged)
@@ -46,12 +46,12 @@ class Q_QUICK3DJOLTPHYSICS_EXPORT CharacterVirtual : public AbstractPhysicsBody
     Q_PROPERTY(QVector3D shapeOffset READ shapeOffset WRITE setShapeOffset NOTIFY shapeOffsetChanged)
     Q_PROPERTY(BackFaceMode backFaceMode READ backFaceMode WRITE setBackFaceMode NOTIFY backFaceModeChanged)
     Q_PROPERTY(float predictiveContactDistance READ predictiveContactDistance WRITE setPredictiveContactDistance NOTIFY predictiveContactDistanceChanged)
-    Q_PROPERTY(quint8 maxCollisionIterations READ maxCollisionIterations WRITE setMaxCollisionIterations NOTIFY maxCollisionIterationsChanged)
-    Q_PROPERTY(quint8 maxConstraintIterations READ maxConstraintIterations WRITE setMaxConstraintIterations NOTIFY maxConstraintIterationsChanged)
+    Q_PROPERTY(int maxCollisionIterations READ maxCollisionIterations WRITE setMaxCollisionIterations NOTIFY maxCollisionIterationsChanged)
+    Q_PROPERTY(int maxConstraintIterations READ maxConstraintIterations WRITE setMaxConstraintIterations NOTIFY maxConstraintIterationsChanged)
     Q_PROPERTY(float minTimeRemaining READ minTimeRemaining WRITE setMinTimeRemaining NOTIFY minTimeRemainingChanged)
     Q_PROPERTY(float collisionTolerance READ collisionTolerance WRITE setCollisionTolerance NOTIFY collisionToleranceChanged)
     Q_PROPERTY(float characterPadding READ characterPadding WRITE setCharacterPadding NOTIFY characterPaddingChanged)
-    Q_PROPERTY(quint8 maxNumHits READ maxNumHits WRITE setMaxNumHits NOTIFY maxNumHitsChanged)
+    Q_PROPERTY(int maxNumHits READ maxNumHits WRITE setMaxNumHits NOTIFY maxNumHitsChanged)
     Q_PROPERTY(float hitReductionCosMaxAngle READ hitReductionCosMaxAngle WRITE setHitReductionCosMaxAngle NOTIFY hitReductionCosMaxAngleChanged)
     Q_PROPERTY(float penetrationRecoverySpeed READ penetrationRecoverySpeed WRITE setPenetrationRecoverySpeed NOTIFY penetrationRecoverySpeedChanged)
     Q_PROPERTY(AbstractCharacterContactListener *characterContactListener READ characterContactListener WRITE setCharacterContactListener NOTIFY characterContactListenerChanged)
@@ -65,14 +65,6 @@ public:
         CollideWithBackFaces
     };
     Q_ENUM(BackFaceMode)
-
-    enum class GroundState {
-        OnGround,
-        OnSteepGround,
-        NotSupported,
-        InAir
-    };
-    Q_ENUM(GroundState)
 
     QVector4D supportingVolume() const;
     void setSupportingVolume(const QVector4D &supportingVolume);
@@ -88,18 +80,18 @@ public:
     void setBackFaceMode(BackFaceMode backFaceMode);
     float predictiveContactDistance() const;
     void setPredictiveContactDistance(float predictiveContactDistance);
-    quint8 maxCollisionIterations() const;
-    void setMaxCollisionIterations(quint8 maxCollisionIterations);
-    quint8 maxConstraintIterations() const;
-    void setMaxConstraintIterations(quint8 maxConstraintIterations);
+    int maxCollisionIterations() const;
+    void setMaxCollisionIterations(int maxCollisionIterations);
+    int maxConstraintIterations() const;
+    void setMaxConstraintIterations(int maxConstraintIterations);
     float minTimeRemaining() const;
     void setMinTimeRemaining(float minTimeRemaining);
     float collisionTolerance() const;
     void setCollisionTolerance(float collisionTolerance);
     float characterPadding() const;
     void setCharacterPadding(float characterPadding);
-    quint8 maxNumHits() const;
-    void setMaxNumHits(quint8 maxNumHits);
+    int maxNumHits() const;
+    void setMaxNumHits(int maxNumHits);
     float hitReductionCosMaxAngle() const;
     void setHitReductionCosMaxAngle(float hitReductionCosMaxAngle);
     float penetrationRecoverySpeed() const;
@@ -115,19 +107,12 @@ public:
     Q_INVOKABLE QVector3D getGroundNormal() const;
     Q_INVOKABLE QVector3D getGroundVelocity() const;
 
-    Q_INVOKABLE QMatrix4x4 getCenterOfMassTransform() const;
-
     Q_INVOKABLE bool isSlopeTooSteep(const QVector3D &normal);
-    Q_INVOKABLE void extendedUpdate(float deltaTime,
-                                    const QVector3D &gravity,
-                                    ExtendedUpdateSettings *updateSettings,
-                                    unsigned int broadPhaseLayerFilter,
-                                    unsigned int objectLayerFilter);
+
+    Q_INVOKABLE void extendedUpdate(float deltaTime, const QVector3D &gravity, ExtendedUpdateSettings *updateSettings, int broadPhaseLayerFilter, int objectLayerFilter);
+    Q_INVOKABLE void refreshContacts(int broadPhaseLayerFilter, int objectLayerFilter);
     Q_INVOKABLE void updateGroundVelocity();
-    Q_INVOKABLE void setShape(AbstractShape *shape,
-                              float maxPenetrationDepth,
-                              unsigned int broadPhaseLayerFilter,
-                              unsigned int objectLayerFilter);
+    Q_INVOKABLE bool setShape(AbstractShape *shape, float maxPenetrationDepth, int broadPhaseLayerFilter, int objectLayerFilter);
 
 signals:
     void supportingVolumeChanged(const QVector4D &supportingVolume);
@@ -137,12 +122,12 @@ signals:
     void shapeOffsetChanged(const QVector3D &shapeOffset);
     void backFaceModeChanged(BackFaceMode backFaceMode);
     void predictiveContactDistanceChanged(float predictiveContactDistance);
-    void maxCollisionIterationsChanged(quint8 maxCollisionIterations);
-    void maxConstraintIterationsChanged(quint8 maxConstraintIterations);
+    void maxCollisionIterationsChanged(int maxCollisionIterations);
+    void maxConstraintIterationsChanged(int maxConstraintIterations);
     void minTimeRemainingChanged(float minTimeRemaining);
     void collisionToleranceChanged(float collisionTolerance);
     void characterPaddingChanged(float characterPadding);
-    void maxNumHitsChanged(quint8 maxNumHits);
+    void maxNumHitsChanged(int maxNumHits);
     void hitReductionCosMaxAngleChanged(float hitReductionCosMaxAngle);
     void penetrationRecoverySpeedChanged(float penetrationRecoverySpeed);
     void characterContactListenerChanged(AbstractCharacterContactListener *characterContactListener);
@@ -164,15 +149,8 @@ private:
     BackFaceMode m_backFaceMode;
     AbstractCharacterContactListener *m_characterContactListener = nullptr;
 
-    float m_maxPenetrationDepth;
-    unsigned int m_broadPhaseLayerFilter;
-    unsigned int m_objectLayerFilter;
-    bool m_updateShapeNeeded = false;
-
     JPH::CharacterVirtual *m_character = nullptr;
     JPH::CharacterVirtualSettings m_characterSettings;
-
-    bool m_syncing = false;
 };
 
 Q_DECLARE_METATYPE(ExtendedUpdateSettings)

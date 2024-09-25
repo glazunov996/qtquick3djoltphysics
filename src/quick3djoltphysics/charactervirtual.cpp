@@ -2,8 +2,9 @@
 #include "physicsutils_p.h"
 
 #include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Math/Mat44.h>
 
-CharacterVirtual::CharacterVirtual(QQuick3DNode *parent) : AbstractPhysicsBody(parent)
+CharacterVirtual::CharacterVirtual(QQuick3DNode *parent) : AbstractPhysicsCharacter(parent)
 {
     connect(this, &QQuick3DNode::upChanged, this, &CharacterVirtual::handleUpChanged);
     connect(this, &QQuick3DNode::scenePositionChanged, this, &CharacterVirtual::handleScenePositionChanged);
@@ -140,12 +141,12 @@ void CharacterVirtual::setPredictiveContactDistance(float predictiveContactDista
     emit predictiveContactDistanceChanged(predictiveContactDistance);
 }
 
-quint8 CharacterVirtual::maxCollisionIterations() const
+int CharacterVirtual::maxCollisionIterations() const
 {
     return m_characterSettings.mMaxCollisionIterations;
 }
 
-void CharacterVirtual::setMaxCollisionIterations(quint8 maxCollisionIterations)
+void CharacterVirtual::setMaxCollisionIterations(int maxCollisionIterations)
 {
     if (m_characterSettings.mMaxCollisionIterations == maxCollisionIterations)
         return;
@@ -160,12 +161,12 @@ void CharacterVirtual::setMaxCollisionIterations(quint8 maxCollisionIterations)
     emit maxCollisionIterationsChanged(maxCollisionIterations);
 }
 
-quint8 CharacterVirtual::maxConstraintIterations() const
+int CharacterVirtual::maxConstraintIterations() const
 {
     return m_characterSettings.mMaxConstraintIterations;
 }
 
-void CharacterVirtual::setMaxConstraintIterations(quint8 maxConstraintIterations)
+void CharacterVirtual::setMaxConstraintIterations(int maxConstraintIterations)
 {
     if (m_characterSettings.mMaxCollisionIterations == maxConstraintIterations)
         return;
@@ -240,12 +241,12 @@ void CharacterVirtual::setCharacterPadding(float characterPadding)
     emit characterPaddingChanged(characterPadding);
 }
 
-quint8 CharacterVirtual::maxNumHits() const
+int CharacterVirtual::maxNumHits() const
 {
     return m_characterSettings.mMaxNumHits;
 }
 
-void CharacterVirtual::setMaxNumHits(quint8 maxNumHits)
+void CharacterVirtual::setMaxNumHits(int maxNumHits)
 {
     if (m_characterSettings.mMaxNumHits == maxNumHits)
         return;
@@ -367,14 +368,6 @@ QVector3D CharacterVirtual::getGroundVelocity() const
     return PhysicsUtils::toQtType(m_character->GetGroundVelocity());
 }
 
-QMatrix4x4 CharacterVirtual::getCenterOfMassTransform() const
-{
-    if (m_character == nullptr)
-        return QMatrix4x4();
-
-    return PhysicsUtils::toQtType(m_character->GetCenterOfMassTransform());
-}
-
 bool CharacterVirtual::isSlopeTooSteep(const QVector3D &normal)
 {
     if (m_character == nullptr)
@@ -386,25 +379,27 @@ bool CharacterVirtual::isSlopeTooSteep(const QVector3D &normal)
 void CharacterVirtual::extendedUpdate(float deltaTime,
                                       const QVector3D &gravity,
                                       ExtendedUpdateSettings *updateSettings,
-                                      unsigned int broadPhaseLayerFilter,
-                                      unsigned int objectLayerFilter)
+                                      int broadPhaseLayerFilter,
+                                      int objectLayerFilter)
 {
-    if (m_character == nullptr || m_jolt == nullptr)
+    if (m_character == nullptr) {
+        qWarning() << "Warning: Invoking 'extendedUpdate' before character is initialized will have no effect";
         return;
+    }
 
-    JPH::CharacterVirtual::ExtendedUpdateSettings update_settings;
+    JPH::CharacterVirtual::ExtendedUpdateSettings inSettings;
     if (updateSettings) {
-        update_settings.mStickToFloorStepDown = PhysicsUtils::toJoltType(updateSettings->stickToFloorStepDown);
-        update_settings.mWalkStairsStepUp = PhysicsUtils::toJoltType(updateSettings->walkStairsStepUp);
-        update_settings.mWalkStairsMinStepForward = updateSettings->walkStairsMinStepForward;
-        update_settings.mWalkStairsStepForwardTest = updateSettings->walkStairsStepForwardTest;
-        update_settings.mWalkStairsCosAngleForwardContact = qCos(qDegreesToRadians(updateSettings->walkStairsCosAngleForwardContact));
-        update_settings.mWalkStairsStepDownExtra = PhysicsUtils::toJoltType(updateSettings->walkStairsStepDownExtra);
+        inSettings.mStickToFloorStepDown = PhysicsUtils::toJoltType(updateSettings->stickToFloorStepDown);
+        inSettings.mWalkStairsStepUp = PhysicsUtils::toJoltType(updateSettings->walkStairsStepUp);
+        inSettings.mWalkStairsMinStepForward = updateSettings->walkStairsMinStepForward;
+        inSettings.mWalkStairsStepForwardTest = updateSettings->walkStairsStepForwardTest;
+        inSettings.mWalkStairsCosAngleForwardContact = qCos(qDegreesToRadians(updateSettings->walkStairsCosAngleForwardContact));
+        inSettings.mWalkStairsStepDownExtra = PhysicsUtils::toJoltType(updateSettings->walkStairsStepDownExtra);
     }
 
     m_character->ExtendedUpdate(deltaTime,
                                 PhysicsUtils::toJoltType(gravity),
-                                update_settings,
+                                inSettings,
                                 m_jolt->GetDefaultBroadPhaseLayerFilter(broadPhaseLayerFilter),
                                 m_jolt->GetDefaultLayerFilter(objectLayerFilter),
                                 {},
@@ -412,25 +407,56 @@ void CharacterVirtual::extendedUpdate(float deltaTime,
                                 *m_tempAllocator);
 }
 
+void CharacterVirtual::refreshContacts(int broadPhaseLayerFilter, int objectLayerFilter)
+{
+    if (m_character == nullptr) {
+        qWarning() << "Warning: Invoking 'refreshContacts' before character is initialized will have no effect";
+        return;
+    }
+
+    m_character->RefreshContacts(m_jolt->GetDefaultBroadPhaseLayerFilter(broadPhaseLayerFilter),
+                                 m_jolt->GetDefaultLayerFilter(objectLayerFilter),
+                                 {},
+                                 {},
+                                 *m_tempAllocator);
+}
+
 void CharacterVirtual::updateGroundVelocity()
 {
-    if (m_character == nullptr)
+    if (m_character == nullptr) {
+        qWarning() << "Warning: Invoking 'updateGroundVelocity' before character is initialized will have no effect";
         return;
+    }
 
     m_character->UpdateGroundVelocity();
 }
 
-void CharacterVirtual::setShape(AbstractShape *shape, float maxPenetrationDepth, unsigned int broadPhaseLayerFilter, unsigned int objectLayerFilter)
+bool CharacterVirtual::setShape(AbstractShape *shape, float maxPenetrationDepth, int broadPhaseLayerFilter, int objectLayerFilter)
 {
-    if (m_character == nullptr)
-        return;
+    if (m_character == nullptr) {
+        qWarning() << "Warning: Invoking 'setShape' before character is initialized will have no effect";
+        return false;
+    }
 
-    m_maxPenetrationDepth = maxPenetrationDepth;
-    m_broadPhaseLayerFilter = broadPhaseLayerFilter;
-    m_objectLayerFilter = objectLayerFilter;
-
-    m_updateShapeNeeded = true;
     AbstractPhysicsBody::setShape(shape);
+
+    const auto &inShape = getRotatedTranslatedJoltShape();
+    if (inShape == nullptr)
+        return false;
+
+    if (!m_character->SetShape(inShape,
+                               maxPenetrationDepth,
+                               m_jolt->GetDefaultBroadPhaseLayerFilter(broadPhaseLayerFilter),
+                               m_jolt->GetDefaultLayerFilter(objectLayerFilter),
+                               {},
+                               {},
+                               *m_tempAllocator)) {
+        return false;
+    }
+
+    sync();
+
+    return true;
 }
 
 void CharacterVirtual::updateJoltObject()
@@ -438,23 +464,12 @@ void CharacterVirtual::updateJoltObject()
     if (m_jolt == nullptr || m_shape == nullptr)
         return;
 
-    if (m_character) {
-        if (m_shapeDirty) {
-            if (m_updateShapeNeeded) {
-                m_updateShapeNeeded = false;
-                m_character->SetShape(m_shape->getJoltShape(),
-                                      m_maxPenetrationDepth,
-                                      m_jolt->GetDefaultBroadPhaseLayerFilter(m_broadPhaseLayerFilter),
-                                      m_jolt->GetDefaultLayerFilter(m_objectLayerFilter),
-                                      {},
-                                      {},
-                                      *m_tempAllocator);
-            } else {
-                qWarning() << "Warning: To change character shape, the invokable 'setShape' must be called.";
-            }
-        }
-    } else {
-        m_characterSettings.mShape = m_shape->getJoltShape();
+    if (!m_character) {
+        const auto &shape = getRotatedTranslatedJoltShape();
+        if (shape == nullptr)
+            return;
+
+        m_characterSettings.mShape = shape;
         m_characterSettings.mSupportingVolume = JPH::Plane(PhysicsUtils::toJoltType(m_supportingVolume.toVector3D()), m_supportingVolume.w());
         m_characterSettings.mBackFaceMode = static_cast<JPH::EBackFaceMode>(m_backFaceMode);
         m_characterSettings.mMaxSlopeAngle = qDegreesToRadians(m_maxSlopeAngle);
@@ -465,6 +480,8 @@ void CharacterVirtual::updateJoltObject()
 
         if (m_characterContactListener)
             m_character->SetListener(m_characterContactListener->getJoltCharacterContactListener());
+
+        sync();
     }
 
     m_shapeDirty = false;
@@ -483,7 +500,8 @@ void CharacterVirtual::sync()
     if (m_character == nullptr)
         return;
 
-    QVector3D position = PhysicsUtils::toQtType(m_character->GetPosition());
+    QVector3D position = PhysicsUtils::toQtType(
+                    m_character->GetCenterOfMassTransform().GetColumn3(3));
     const QQuick3DNode *parentNode = static_cast<QQuick3DNode *>(parentItem());
 
     m_syncing = true;
@@ -511,6 +529,8 @@ void CharacterVirtual::handleScenePositionChanged()
         return;
 
     m_character->SetPosition(PhysicsUtils::toJoltType(scenePosition()));
+
+    sync();
 }
 
 void CharacterVirtual::handleSceneRotationChanged()
