@@ -84,7 +84,15 @@ public:
     {
         auto collisionResult = toCollideShapeResultType(inCollisionResult);
 
-        return static_cast<JPH::ValidateResult>(m_d->contactValidate(inBody1.GetID().GetIndexAndSequenceNumber(), inBody2.GetID().GetIndexAndSequenceNumber(), PhysicsUtils::toQtType(inBaseOffset), collisionResult));
+        AbstractContactListener::BodyContact bodyContact;
+        bodyContact.bodyID1 = inBody1.GetID().GetIndexAndSequenceNumber();
+        bodyContact.bodyID2 = inBody2.GetID().GetIndexAndSequenceNumber();
+        bodyContact.subShapeID1 = 0;
+        bodyContact.subShapeID2 = 0;
+        bodyContact.isBodyID1Sensor = inBody1.IsSensor();
+        bodyContact.isBodyID2Sensor = inBody2.IsSensor();
+
+        return static_cast<JPH::ValidateResult>(m_d->contactValidate(bodyContact, PhysicsUtils::toQtType(inBaseOffset), collisionResult));
     }
 
     void OnContactAdded(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override
@@ -92,7 +100,15 @@ public:
         auto manifold = toContactManifoldType(inManifold);
         auto settings = toContactSettingsType(ioSettings);
 
-        m_d->contactAdded(inBody1.GetID().GetIndexAndSequenceNumber(), inBody2.GetID().GetIndexAndSequenceNumber(), manifold, settings);
+        AbstractContactListener::BodyContact bodyContact;
+        bodyContact.bodyID1 = inBody1.GetID().GetIndexAndSequenceNumber();
+        bodyContact.bodyID2 = inBody2.GetID().GetIndexAndSequenceNumber();
+        bodyContact.subShapeID1 = 0;
+        bodyContact.subShapeID2 = 0;
+        bodyContact.isBodyID1Sensor = inBody1.IsSensor();
+        bodyContact.isBodyID2Sensor = inBody2.IsSensor();
+
+        m_d->contactAdded(bodyContact, manifold, settings);
 
         ioSettings = toJoltContactSettingsType(settings);
     }
@@ -102,17 +118,30 @@ public:
         auto manifold = toContactManifoldType(inManifold);
         auto settings = toContactSettingsType(ioSettings);
 
-        m_d->contactPersisted(inBody1.GetID().GetIndexAndSequenceNumber(), inBody2.GetID().GetIndexAndSequenceNumber(), manifold, settings);
+        AbstractContactListener::BodyContact bodyContact;
+        bodyContact.bodyID1 = inBody1.GetID().GetIndexAndSequenceNumber();
+        bodyContact.bodyID2 = inBody2.GetID().GetIndexAndSequenceNumber();
+        bodyContact.subShapeID1 = 0;
+        bodyContact.subShapeID2 = 0;
+        bodyContact.isBodyID1Sensor = inBody1.IsSensor();
+        bodyContact.isBodyID2Sensor = inBody2.IsSensor();
+
+        m_d->contactPersisted(bodyContact, manifold, settings);
 
         ioSettings = toJoltContactSettingsType(settings);
     }
 
     void OnContactRemoved(const JPH::SubShapeIDPair &inSubShapePair) override
     {
-        m_d->contactRemoved(inSubShapePair.GetBody1ID().GetIndexAndSequenceNumber(),
-                            inSubShapePair.GetSubShapeID1().GetValue(),
-                            inSubShapePair.GetBody2ID().GetIndexAndSequenceNumber(),
-                            inSubShapePair.GetSubShapeID2().GetValue());
+        AbstractContactListener::BodyContact bodyContact;
+        bodyContact.bodyID1 = inSubShapePair.GetBody1ID().GetIndexAndSequenceNumber();
+        bodyContact.bodyID2 = inSubShapePair.GetBody2ID().GetIndexAndSequenceNumber();
+        bodyContact.subShapeID1 = inSubShapePair.GetSubShapeID1().GetValue();
+        bodyContact.subShapeID2 = inSubShapePair.GetSubShapeID2().GetValue();
+        bodyContact.isBodyID1Sensor = false;
+        bodyContact.isBodyID2Sensor = false;
+
+        m_d->contactRemoved(bodyContact);
     }
 
 private:
@@ -129,6 +158,48 @@ AbstractContactListener::~AbstractContactListener()
 {
     delete m_impl;
     m_impl = nullptr;
+}
+
+void AbstractContactListener::registerBodyContact(const BodyContact &bodyContact)
+{
+    QMutexLocker locker(&m_mutex);
+    m_bodyContacts.push_back(bodyContact);
+}
+
+void AbstractContactListener::registerEnteredBodyContact(const BodyContact &bodyContact)
+{
+    QMutexLocker locker(&m_mutex);
+    m_enteredBodyContacts.push_back(bodyContact);
+}
+
+void AbstractContactListener::registerExitedBodyContact(const BodyContact &bodyContact)
+{
+    QMutexLocker locker(&m_mutex);
+    m_exitedBodyContacts.push_back(bodyContact);
+}
+
+QList<AbstractContactListener::BodyContact> AbstractContactListener::takeBodyContacts()
+{
+    QMutexLocker locker(&m_mutex);
+    auto bodyContacts = std::move(m_bodyContacts);
+    m_bodyContacts.clear();
+    return bodyContacts;
+}
+
+QList<AbstractContactListener::BodyContact> AbstractContactListener::takeEnteredBodyContacts()
+{
+    QMutexLocker locker(&m_mutex);
+    auto enteredBodyContacts = std::move(m_enteredBodyContacts);
+    m_enteredBodyContacts.clear();
+    return enteredBodyContacts;
+}
+
+QList<AbstractContactListener::BodyContact> AbstractContactListener::takeExitedBodyContacts()
+{
+    QMutexLocker locker(&m_mutex);
+    auto exitedBodyContacts = std::move(m_exitedBodyContacts);
+    m_exitedBodyContacts.clear();
+    return exitedBodyContacts;
 }
 
 JPH::ContactListener *AbstractContactListener::getJoltContactListener() const

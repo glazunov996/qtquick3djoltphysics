@@ -1,7 +1,6 @@
 #include "examplecharactercontactlistener.h"
 
-#include <QtGui/QVector3D>
-#include <QDebug>
+#include <QVector3D>
 
 ExampleCharacterContactListener::ExampleCharacterContactListener(QObject *parent) : AbstractCharacterContactListener(parent) {}
 
@@ -37,19 +36,19 @@ void ExampleCharacterContactListener::onAdjustBodyVelocity(int bodyID2, QVector3
 {
 }
 
-void ExampleCharacterContactListener::onContactAdded(int bodyID2, int subShapeID2, const QVector3D &contactPosition, const QVector3D &contactNormal, CharacterContactSettings &settings)
+void ExampleCharacterContactListener::onContactAdded(const Contact &contact, CharacterContactSettings &settings)
 {
-    auto i = std::find(m_rampBlockIDs.begin(), m_rampBlockIDs.end(), bodyID2);
+    auto i = std::find(m_rampBlockIDs.begin(), m_rampBlockIDs.end(), contact.bodyID2);
     if (i != m_rampBlockIDs.end()) {
         size_t index = i - m_rampBlockIDs.begin();
         settings.canPushCharacter = (index & 1) != 0;
         settings.canReceiveImpulses = (index & 2) != 0;
     }
 
-    emit enableSliding(settings.canPushCharacter, bodyID2);
+    emit enableSliding(settings.canPushCharacter, contact.bodyID2);
 }
 
-void ExampleCharacterContactListener::onContactSolve(int bodyID2, int subShapeID2, const QVector3D &contactPosition, const QVector3D &contactNormal, const QVector3D &contactVelocity, const QVector3D &characterVelocity, QVector3D &newCharacterVelocity, bool isSlopeToSteep)
+void ExampleCharacterContactListener::onContactSolve(const Contact &contact, const QVector3D &contactVelocity, const QVector3D &characterVelocity, QVector3D &newCharacterVelocity, bool isSlopeToSteep)
 {
     if (!m_allowSliding && qFuzzyCompare(contactVelocity, QVector3D()) && !isSlopeToSteep)
         newCharacterVelocity = QVector3D();

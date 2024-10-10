@@ -8,6 +8,8 @@
 
 #include <Jolt/Jolt.h>
 
+class AbstractShape;
+
 class Q_QUICK3DJOLTPHYSICS_EXPORT AbstractPhysicsCharacter : public AbstractPhysicsBody
 {
     Q_OBJECT
@@ -26,7 +28,7 @@ public:
     Q_ENUM(GroundState)
 
 protected:
-    JPH::Ref<JPH::Shape> getRotatedTranslatedJoltShape();
+    static JPH::Ref<JPH::Shape> getRotatedTranslatedJoltShape(AbstractShape *shape);
 };
 
 #endif // ABSTRACTPHYSICSCHARACTER_P_H

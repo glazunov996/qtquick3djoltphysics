@@ -51,6 +51,7 @@ private:
     friend class Body;
     friend class StaticCompoundShape;
     friend class AbstractPhysicsCharacter;
+    friend class CharacterVirtual;
 };
 
 #endif // ABSTRACTSHAPE_P_H

@@ -33,7 +33,7 @@ void BoxShape::updateJoltShape()
     if (!m_shapeInitialized)
         return;
 
-    m_shape = new JPH::BoxShape(PhysicsUtils::toJoltType(m_extents * sceneScale() * 0.5f));
+    m_shape = new JPH::BoxShape(PhysicsUtils::toJoltType(m_extents * sceneScale() * 0.5f), 0.0f);
 
     updateConvexShapeDensity();
     updateOffsetCenterOfMass();

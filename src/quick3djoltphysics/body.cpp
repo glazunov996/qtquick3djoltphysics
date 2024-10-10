@@ -95,6 +95,24 @@ void Body::setMotionQuality(MotionQuality motionQuality)
     emit motionQualityChanged(motionQuality);
 }
 
+
+bool Body::enhancedInternalEdgeRemoval() const
+{
+    return m_bodySettings.mEnhancedInternalEdgeRemoval;
+}
+
+void Body::setEnhancedInternalEdgeRemoval(bool enhancedInternalEdgeRemoval)
+{
+    if (m_bodySettings.mEnhancedInternalEdgeRemoval == enhancedInternalEdgeRemoval)
+        return;
+
+    m_bodySettings.mEnhancedInternalEdgeRemoval = enhancedInternalEdgeRemoval;
+    if (m_body)
+        m_body->SetEnhancedInternalEdgeRemoval(enhancedInternalEdgeRemoval);
+
+    emit enhancedInternalEdgeRemovalChanged(enhancedInternalEdgeRemoval);
+}
+
 int Body::objectLayer() const
 {
     return m_bodySettings.mObjectLayer;
@@ -443,6 +461,36 @@ void Body::addTorque(const QVector3D &torque)
     bodyInterface.AddTorque(m_body->GetID(), PhysicsUtils::toJoltType(torque));
 }
 
+void Body::resetForce()
+{
+    if (m_body == nullptr) {
+        qWarning() << "Warning: Invoking 'resetForce' before body is initialized will have no effect";
+        return;
+    }
+
+    m_body->ResetForce();
+}
+
+void Body::resetTorque()
+{
+    if (m_body == nullptr) {
+        qWarning() << "Warning: Invoking 'resetTorque' before body is initialized will have no effect";
+        return;
+    }
+
+    m_body->ResetTorque();
+}
+
+void Body::resetMotion()
+{
+    if (m_body == nullptr) {
+        qWarning() << "Warning: Invoking 'resetMotion' before body is initialized will have no effect";
+        return;
+    }
+
+    m_body->ResetMotion();
+}
+
 void Body::addImpulse(const QVector3D &impulse)
 {
     if (m_body == nullptr) {
@@ -527,6 +575,8 @@ void Body::updateJoltObject()
 
         m_bodyID = static_cast<int>(m_body->GetID().GetIndexAndSequenceNumber());
         emit bodyIDChanged(m_bodyID);
+
+        sync();
     }
 
     m_shapeDirty = false;

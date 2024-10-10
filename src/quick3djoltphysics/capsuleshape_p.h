@@ -27,8 +27,8 @@ protected:
     void updateJoltShape() override;
 
 private:
-    float m_diameter = 100.0f;
-    float m_height = 100.0f;
+    float m_diameter = 1.0f;
+    float m_height = 1.0f;
 };
 
 #endif // CAPSULESHAPE_P_H

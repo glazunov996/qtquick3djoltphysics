@@ -46,11 +46,13 @@ public:
 
         auto settings = toCharacterContactSettings(ioSettings);
 
-        m_d->onContactAdded(inBodyID2.GetIndexAndSequenceNumber(),
-                            inSubShapeID2.GetValue(),
-                            PhysicsUtils::toQtType(inContactPosition),
-                            PhysicsUtils::toQtType(inContactNormal),
-                            settings);
+        AbstractCharacterContactListener::Contact contact;
+        contact.bodyID2 = inBodyID2.GetIndexAndSequenceNumber();
+        contact.subShapeID2 = inSubShapeID2.GetValue();
+        contact.contactPosition = PhysicsUtils::toQtType(inContactPosition);
+        contact.contactNormal = PhysicsUtils::toQtType(inContactNormal);
+
+        m_d->onContactAdded(contact, settings);
 
         ioSettings = toJoltCharacterContactSettings(settings);
     }
@@ -63,10 +65,13 @@ public:
 
         auto newCharacterVelocity = PhysicsUtils::toQtType(ioNewCharacterVelocity);
 
-        m_d->onContactSolve(inBodyID2.GetIndexAndSequenceNumber(),
-                            inSubShapeID2.GetValue(),
-                            PhysicsUtils::toQtType(inContactPosition),
-                            PhysicsUtils::toQtType(inContactNormal),
+        AbstractCharacterContactListener::Contact contact;
+        contact.bodyID2 = inBodyID2.GetIndexAndSequenceNumber();
+        contact.subShapeID2 = inSubShapeID2.GetValue();
+        contact.contactPosition = PhysicsUtils::toQtType(inContactPosition);
+        contact.contactNormal = PhysicsUtils::toQtType(inContactNormal);
+
+        m_d->onContactSolve(contact,
                             PhysicsUtils::toQtType(inContactVelocity),
                             PhysicsUtils::toQtType(inCharacterVelocity),
                             newCharacterVelocity,
@@ -89,6 +94,20 @@ AbstractCharacterContactListener::~AbstractCharacterContactListener()
 {
     delete m_impl;
     m_impl = nullptr;
+}
+
+void AbstractCharacterContactListener::registerContact(const Contact &contact)
+{
+    QMutexLocker locker(&m_mutex);
+    m_contacts.push_back(contact);
+}
+
+QList<AbstractCharacterContactListener::Contact> AbstractCharacterContactListener::takeContacts()
+{
+    QMutexLocker locker(&m_mutex);
+    auto contacts = std::move(m_contacts);
+    m_contacts.clear();
+    return contacts;
 }
 
 JPH::CharacterContactListener *AbstractCharacterContactListener::getJoltCharacterContactListener() const

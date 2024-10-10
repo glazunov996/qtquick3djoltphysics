@@ -16,8 +16,8 @@ public:
     void setRampBlockIDs(const QList<int> &rampBlockIDs);
 
     void onAdjustBodyVelocity(int bodyID2, QVector3D &linearVelocity, QVector3D &angularVelocity) override;
-    void onContactAdded(int bodyID2, int subShapeID2, const QVector3D &contactPosition, const QVector3D &contactNormal, CharacterContactSettings &settings) override;
-    void onContactSolve(int bodyID2, int subShapeID2, const QVector3D &contactPosition, const QVector3D &contactNormal, const QVector3D &contactVelocity, const QVector3D &characterVelocity, QVector3D &newCharacterVelocity, bool isSlopeToSteep) override;
+    void onContactAdded(const Contact &contact, CharacterContactSettings &settings) override;
+    void onContactSolve(const Contact &contact, const QVector3D &contactVelocity, const QVector3D &characterVelocity, QVector3D &newCharacterVelocity, bool isSlopeToSteep) override;
 
     bool allowSliding() const;
     void setAllowSliding(bool allowSliding);

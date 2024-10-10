@@ -13,6 +13,8 @@ Item {
 
     anchors.fill: parent
 
+    property real time: 0
+
     readonly property int nonMoving : 0
     readonly property int moving: 1
     readonly property int debris: 2
@@ -134,7 +136,7 @@ Item {
             newVelocity = currentVerticalVelocity;
         }
 
-        newVelocity = newVelocity.plus(physicsSystem.gravity.times(frameDelta / 1000));
+        newVelocity = newVelocity.plus(physicsSystem.gravity.times(frameDelta));
 
         if (playerControlsHorizontalVelocity) {
             newVelocity = newVelocity.plus(characterUpRotation.times(desiredVelocity));
@@ -147,7 +149,11 @@ Item {
     }
 
     function prePhysicsUpdate(frameDelta) {
-        rampBlocksTimeLeft -= frameDelta / 1000;
+        time += frameDelta;
+
+        smoothVerticallyMovingBody.moveKinematic(Qt.vector3d(0, 2.0, 15).plus(Qt.vector3d(0, 1.75 * Math.sin(time), 0)), Qt.quaternion(1, 0, 0, 0), frameDelta);
+
+        rampBlocksTimeLeft -= frameDelta;
         if (rampBlocksTimeLeft < 0.0) {
             for (var i = 0; i < 4; ++i) {
                 var rampBlock = rampBlocks[i];
@@ -174,7 +180,7 @@ Item {
         else
             updateSettings.walkStairsStepUp = character.up.times(updateSettings.walkStairsStepUp.length())
 
-        character.extendedUpdate(frameDelta / 1000,
+        character.extendedUpdate(frameDelta,
                                  Qt.vector3d(0, -1, 0).times(physicsSystem.gravity.length()),
                                  updateSettings,
                                  moving,
@@ -236,6 +242,10 @@ Item {
             shape: CapsuleShape {
                 height: characterHeightStanding
                 diameter: characterRadiusStanding * 2
+            }
+            innerBodyShape: CapsuleShape {
+                height: characterHeightStanding * 0.9
+                diameter: characterRadiusStanding * 2 * 0.9
             }
             characterContactListener: ExampleCharacterContactListener {
                 id: characterContactListener
@@ -523,6 +533,30 @@ Item {
                     metalness: 0.5
                     roughness: 0.1
                 }
+            }
+        }
+
+        Body {
+            id: smoothVerticallyMovingBody
+            shape: BoxShape {
+                extents: Qt.vector3d(1, 0.15, 3.0)
+            }
+            objectLayer: moving
+            motionType: Body.Kinematic
+            position: Qt.vector3d(0, 2.0, 15)
+            Model {
+                source: "#Cube"
+                materials: PrincipledMaterial {
+                    baseColorMap: Texture {
+                        source: "qrc:/images/checkers2.png"
+                        scaleU: 2
+                        scaleV: 2
+                    }
+                    baseColor: colors[smoothVerticallyMovingBody.bodyID % colors.length]
+                    metalness: 0.5
+                    roughness: 0.1
+                }
+                scale: Qt.vector3d(0.01, 0.0015, 0.03)
             }
         }
 

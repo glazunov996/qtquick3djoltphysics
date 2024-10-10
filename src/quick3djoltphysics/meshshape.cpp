@@ -13,6 +13,8 @@
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 #include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
 
+#include <QDebug>
+
 static QQuick3DGeometry::Attribute
 attributeBySemantic(const QQuick3DGeometry *geometry,
                     QQuick3DGeometry::Attribute::Semantic semantic)
@@ -242,23 +244,9 @@ JPH::MeshShapeSettings *Mesh::meshShapeSettingsSource()
         JPH::VertexList vertices;
         JPH::IndexedTriangleList indexes;
 
-        for (int i = 0; i < numVertices / 3; ++i) {
-            auto i0 = i * 3;
-            auto i1 = i * 3 + 1;
-            auto i2 = i * 3 + 2;
-
-            if (i2 >= numVertices) {
-                qWarning() << "Mesh: Invalid geometry, not enough vertices to form a triangle.";
-                return nullptr;
-            }
-
-            auto v0 = JPH::Float3(vertexData[i0 * vStride], vertexData[i0 * vStride + 1], vertexData[i0 * vStride + 2]);
-            auto v1 = JPH::Float3(vertexData[i1 * vStride], vertexData[i1 * vStride + 1], vertexData[i1 * vStride + 2]);
-            auto v2 = JPH::Float3(vertexData[i2 * vStride], vertexData[i2 * vStride + 1], vertexData[i2 * vStride + 2]);
-
-            vertices.push_back(v0);
-            vertices.push_back(v1);
-            vertices.push_back(v2);
+        for (int i = 0; i < numVertices; ++i) {
+            auto v = JPH::Float3(vertexData[i * vStride], vertexData[i * vStride + 1], vertexData[i * vStride + 2]);
+            vertices.push_back(v);
         }
 
         if (u16IndexType) {
@@ -354,23 +342,9 @@ JPH::MeshShapeSettings *Mesh::meshShapeSettingsGeometrySource()
         JPH::VertexList vertices;
         JPH::IndexedTriangleList indexes;
 
-        for (int i = 0; i < numVertices / 3; ++i) {
-            auto i0 = i * 3;
-            auto i1 = i * 3 + 1;
-            auto i2 = i * 3 + 2;
-
-            if (i2 >= numVertices) {
-                qWarning() << "Mesh: Invalid geometry, not enough vertices to form a triangle.";
-                return nullptr;
-            }
-
-            auto v0 = JPH::Float3(vertexData[i0 * vStride], vertexData[i0 * vStride + 1], vertexData[i0 * vStride + 2]);
-            auto v1 = JPH::Float3(vertexData[i1 * vStride], vertexData[i1 * vStride + 1], vertexData[i1 * vStride + 2]);
-            auto v2 = JPH::Float3(vertexData[i2 * vStride], vertexData[i2 * vStride + 1], vertexData[i2 * vStride + 2]);
-
-            vertices.push_back(v0);
-            vertices.push_back(v1);
-            vertices.push_back(v2);
+        for (int i = 0; i < numVertices; ++i) {
+            auto v = JPH::Float3(vertexData[i * vStride], vertexData[i * vStride + 1], vertexData[i * vStride + 2]);
+            vertices.push_back(v);
         }
 
         if (u16IndexType) {

@@ -118,6 +118,7 @@ private:
     void initPhysics();
     void findPhysicsNodes();
     void updateCurrentTime(int currentTime);
+    void emitContactCallbacks();
 
     friend class PhysicsSystemAnimation;
 

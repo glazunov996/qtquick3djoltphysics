@@ -16,28 +16,30 @@ void ExampleContactListener::setBodyIDs(const QList<int> &bodyIDs)
     emit bodyIDsChanged(m_bodyIDs);
 }
 
-ExampleContactListener::ValidateResult ExampleContactListener::contactValidate(int body1ID, int body2ID, const QVector3D &baseOffset, const CollideShapeResult &collisionResult)
+ExampleContactListener::ValidateResult ExampleContactListener::contactValidate(const BodyContact &bodyContact, const QVector3D &baseOffset, const CollideShapeResult &collisionResult)
 {
-    if ((body1ID == m_bodyIDs[0] && body2ID == m_bodyIDs[1]) || (body1ID == m_bodyIDs[1] && body2ID == m_bodyIDs[0]))
+    if ((bodyContact.bodyID1 == m_bodyIDs[0] && bodyContact.bodyID2 == m_bodyIDs[1]) || (bodyContact.bodyID1 == m_bodyIDs[1] && bodyContact.bodyID2 == m_bodyIDs[0]))
         return ValidateResult::RejectAllContactsForThisBodyPair;
     else
         return ValidateResult::AcceptAllContactsForThisBodyPair;
 }
 
-void ExampleContactListener::contactAdded(int body1ID, int body2ID, const ContactManifold &manifold, ContactSettings &settings)
+void ExampleContactListener::contactAdded(const BodyContact &bodyContact, const ContactManifold &manifold, ContactSettings &settings)
 {
-    if (body1ID == m_bodyIDs[0] || body2ID == m_bodyIDs[0]) {
+    if (bodyContact.bodyID1 == m_bodyIDs[0] || bodyContact.bodyID2 == m_bodyIDs[0]) {
         Q_ASSERT(settings.combinedRestitution == 0.0f);
         settings.combinedRestitution = 1.0f;
     }
+
+    registerBodyContact(bodyContact);
 }
 
-void ExampleContactListener::contactPersisted(int body1ID, int body2ID, const ContactManifold &manifold, ContactSettings &settings)
+void ExampleContactListener::contactPersisted(const BodyContact &bodyContact, const ContactManifold &manifold, ContactSettings &settings)
 {
 
 }
 
-void ExampleContactListener::contactRemoved(int body1ID, int subShapeID1, int body2ID, int subShapeID2)
+void ExampleContactListener::contactRemoved(const BodyContact &bodyContact)
 {
 
 }

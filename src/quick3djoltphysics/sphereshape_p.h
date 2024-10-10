@@ -22,7 +22,7 @@ protected:
     void updateJoltShape() override;
 
 private:
-    float m_diameter = 100.0f;
+    float m_diameter = 1.0f;
 };
 
 #endif // SPHERESHAPE_P_H

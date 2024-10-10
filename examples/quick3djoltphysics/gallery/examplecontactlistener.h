@@ -20,10 +20,10 @@ signals:
     void bodyIDsChanged(const QList<int> &bodyIDs);
 
 public:
-    ValidateResult contactValidate(int body1ID, int body2ID, const QVector3D &baseOffset, const CollideShapeResult &collisionResult) override;
-    void contactAdded(int body1ID, int body2ID, const ContactManifold &manifold, ContactSettings &settings) override;
-    void contactPersisted(int body1ID, int body2ID, const ContactManifold &manifold, ContactSettings &settings) override;
-    void contactRemoved(int body1ID, int subShapeID1, int body2ID, int subShapeID2) override;
+    ValidateResult contactValidate(const BodyContact &bodyContact, const QVector3D &baseOffset, const CollideShapeResult &collisionResult) override;
+    void contactAdded(const BodyContact &bodyContact, const ContactManifold &manifold, ContactSettings &settings) override;
+    void contactPersisted(const BodyContact &bodyContact, const ContactManifold &manifold, ContactSettings &settings) override;
+    void contactRemoved(const BodyContact &bodyContact) override;
 
 private:
     QList<int> m_bodyIDs;

@@ -41,6 +41,7 @@ class Q_QUICK3DJOLTPHYSICS_EXPORT CharacterVirtual : public AbstractPhysicsChara
     Q_OBJECT
     Q_PROPERTY(QVector4D supportingVolume READ supportingVolume WRITE setSupportingVolume NOTIFY supportingVolumeChanged)
     Q_PROPERTY(float maxSlopeAngle READ maxSlopeAngle WRITE setMaxSlopeAngle NOTIFY maxSlopeAngleChanged)
+    Q_PROPERTY(bool enhancedInternalEdgeRemoval READ enhancedInternalEdgeRemoval WRITE setEnhancedInternalEdgeRemoval NOTIFY enhancedInternalEdgeRemovalChanged)
     Q_PROPERTY(float mass READ mass WRITE setMass NOTIFY massChanged)
     Q_PROPERTY(float maxStrength READ maxStrength WRITE setMaxStrength NOTIFY maxStrengthChanged)
     Q_PROPERTY(QVector3D shapeOffset READ shapeOffset WRITE setShapeOffset NOTIFY shapeOffsetChanged)
@@ -55,6 +56,9 @@ class Q_QUICK3DJOLTPHYSICS_EXPORT CharacterVirtual : public AbstractPhysicsChara
     Q_PROPERTY(float hitReductionCosMaxAngle READ hitReductionCosMaxAngle WRITE setHitReductionCosMaxAngle NOTIFY hitReductionCosMaxAngleChanged)
     Q_PROPERTY(float penetrationRecoverySpeed READ penetrationRecoverySpeed WRITE setPenetrationRecoverySpeed NOTIFY penetrationRecoverySpeedChanged)
     Q_PROPERTY(AbstractCharacterContactListener *characterContactListener READ characterContactListener WRITE setCharacterContactListener NOTIFY characterContactListenerChanged)
+    Q_PROPERTY(int innerBodyID READ innerBodyID NOTIFY innerBodyIDChanged)
+    Q_PROPERTY(int innerBodyShapeLayer READ innerBodyShapeLayer WRITE setInnerBodyShapeLayer NOTIFY innerBodyShapeLayerChanged)
+    Q_PROPERTY(AbstractShape *innerBodyShape READ innerBodyShape WRITE setInnerBodyShape NOTIFY innerBodyShapeChanged)
     QML_NAMED_ELEMENT(CharacterVirtual)
 public:
     explicit CharacterVirtual(QQuick3DNode *parent = nullptr);
@@ -70,6 +74,8 @@ public:
     void setSupportingVolume(const QVector4D &supportingVolume);
     float maxSlopeAngle() const;
     void setMaxSlopeAngle(float maxSlopeAngle);
+    bool enhancedInternalEdgeRemoval() const;
+    void setEnhancedInternalEdgeRemoval(bool enhancedInternalEdgeRemoval);
     float mass() const;
     void setMass(float mass);
     float maxStrength() const;
@@ -98,6 +104,11 @@ public:
     void setPenetrationRecoverySpeed(float penetrationRecoverySpeed);
     AbstractCharacterContactListener *characterContactListener() const;
     void setCharacterContactListener(AbstractCharacterContactListener *characterContactListener);
+    int innerBodyID() const;
+    int innerBodyShapeLayer() const;
+    void setInnerBodyShapeLayer(int innerShapeLayer);
+    AbstractShape *innerBodyShape() const;
+    void setInnerBodyShape(AbstractShape *innerBodyShape);
 
     Q_INVOKABLE QVector3D getLinearVelocity() const;
     Q_INVOKABLE void setLinearVelocity(const QVector3D &linearVelocity);
@@ -112,11 +123,12 @@ public:
     Q_INVOKABLE void extendedUpdate(float deltaTime, const QVector3D &gravity, ExtendedUpdateSettings *updateSettings, int broadPhaseLayerFilter, int objectLayerFilter);
     Q_INVOKABLE void refreshContacts(int broadPhaseLayerFilter, int objectLayerFilter);
     Q_INVOKABLE void updateGroundVelocity();
-    Q_INVOKABLE bool setShape(AbstractShape *shape, float maxPenetrationDepth, int broadPhaseLayerFilter, int objectLayerFilter);
+    Q_INVOKABLE bool setShape(AbstractShape *shape, AbstractShape *innerShape, float maxPenetrationDepth, int broadPhaseLayerFilter, int objectLayerFilter);
 
 signals:
     void supportingVolumeChanged(const QVector4D &supportingVolume);
     void maxSlopeAngleChanged(float maxSlopeAngle);
+    void enhancedInternalEdgeRemovalChanged(bool enhancedInternalEdgeRemoval);
     void massChanged(float mass);
     void maxStrengthChanged(float maxStrength);
     void shapeOffsetChanged(const QVector3D &shapeOffset);
@@ -131,11 +143,15 @@ signals:
     void hitReductionCosMaxAngleChanged(float hitReductionCosMaxAngle);
     void penetrationRecoverySpeedChanged(float penetrationRecoverySpeed);
     void characterContactListenerChanged(AbstractCharacterContactListener *characterContactListener);
+    void innerBodyIDChanged(int innerBodyID);
+    void innerBodyShapeLayerChanged(int innerShapeLayer);
+    void innerBodyShapeChanged(AbstractShape *shape);
 
 protected:
     void updateJoltObject() override;
     void cleanup() override;
     void sync() override;
+    void emitContactCallbacks();
 
 private slots:
     void handleUpChanged();
@@ -148,6 +164,9 @@ private:
     QVector3D m_shapeOffset;
     BackFaceMode m_backFaceMode;
     AbstractCharacterContactListener *m_characterContactListener = nullptr;
+    int m_innerBodyID = -1;
+    AbstractShape *m_innerBodyShape = nullptr;
+    QMetaObject::Connection m_innerBodyShapeSignalConnection;
 
     JPH::CharacterVirtual *m_character = nullptr;
     JPH::CharacterVirtualSettings m_characterSettings;

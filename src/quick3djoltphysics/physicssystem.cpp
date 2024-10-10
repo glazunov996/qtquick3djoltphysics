@@ -13,6 +13,7 @@
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Collision/RayCast.h>
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
+#include <Jolt/Physics/Body/BodyLock.h>
 
 Q_LOGGING_CATEGORY(lcQuick3dJoltPhysics, "qt.quick3d.joltphysics")
 
@@ -533,17 +534,105 @@ void PhysicsSystem::updateCurrentTime(int currentTime)
     if (!m_physicsInitialized)
         return;
 
-    qreal dt = m_timeInt / 1000.;
+    int dt = m_timeInt;
     m_timeInt = currentTime;
-    qreal time =  m_timeInt / 1000.;
+    int time =  m_timeInt;
     dt = time - dt;
 
-    emit beforeFrameDone(dt * 1000);
+    float deltaTime = dt / 1000.0f;
 
-    m_jolt->Update(dt, m_collisionSteps, m_tempAllocator, m_jobSystem);
+    emit beforeFrameDone(deltaTime);
+
+    m_jolt->Update(deltaTime, m_collisionSteps, m_tempAllocator, m_jobSystem);
 
     for (auto physicsNode : std::as_const(m_physicsNodes))
         physicsNode->sync();
 
-    emit frameDone(dt * 1000);
+    emitContactCallbacks();
+
+    emit frameDone(deltaTime);
+}
+
+void PhysicsSystem::emitContactCallbacks()
+{
+    if (m_contactListener == nullptr)
+        return;
+
+    auto bodyContacts = m_contactListener->takeBodyContacts();
+    for (const auto &bodyContact : std::as_const(bodyContacts)) {
+        Body *qtBody1 = nullptr;
+        {
+            JPH::BodyLockRead bodyLock1(m_jolt->GetBodyLockInterface(), JPH::BodyID(bodyContact.bodyID1));
+            if (bodyLock1.Succeeded()) {
+                const JPH::Body &body = bodyLock1.GetBody();
+                qtBody1 = reinterpret_cast<Body *>(body.GetUserData());
+            }
+        }
+
+        Body *qtBody2 = nullptr;
+        {
+            JPH::BodyLockRead bodyLock2(m_jolt->GetBodyLockInterface(), JPH::BodyID(bodyContact.bodyID2));
+            if (bodyLock2.Succeeded()) {
+                const JPH::Body &body = bodyLock2.GetBody();
+                qtBody2 = reinterpret_cast<Body *>(body.GetUserData());
+            }
+        }
+
+        if (qtBody1 && qtBody2) {
+            emit qtBody1->bodyContact(qtBody2);
+            emit qtBody2->bodyContact(qtBody1);
+        }
+    }
+
+    bodyContacts = m_contactListener->takeEnteredBodyContacts();
+    for (const auto &bodyContact : std::as_const(bodyContacts)) {
+        Body *qtBody1 = nullptr;
+        {
+            JPH::BodyLockRead bodyLock1(m_jolt->GetBodyLockInterface(), JPH::BodyID(bodyContact.bodyID1));
+            if (bodyLock1.Succeeded()) {
+                const JPH::Body &body = bodyLock1.GetBody();
+                qtBody1 = reinterpret_cast<Body *>(body.GetUserData());
+            }
+        }
+
+        Body *qtBody2 = nullptr;
+        {
+            JPH::BodyLockRead bodyLock2(m_jolt->GetBodyLockInterface(), JPH::BodyID(bodyContact.bodyID2));
+            if (bodyLock2.Succeeded()) {
+                const JPH::Body &body = bodyLock2.GetBody();
+                qtBody2 = reinterpret_cast<Body *>(body.GetUserData());
+            }
+        }
+
+        if (qtBody1 && qtBody2) {
+            emit qtBody1->bodyEntered(qtBody2);
+            emit qtBody2->bodyEntered(qtBody1);
+        }
+    }
+
+    bodyContacts = m_contactListener->takeExitedBodyContacts();
+    for (const auto &bodyContact : std::as_const(bodyContacts)) {
+        Body *qtBody1 = nullptr;
+        {
+            JPH::BodyLockRead bodyLock1(m_jolt->GetBodyLockInterface(), JPH::BodyID(bodyContact.bodyID1));
+            if (bodyLock1.Succeeded()) {
+                const JPH::Body &body = bodyLock1.GetBody();
+                qtBody1 = reinterpret_cast<Body *>(body.GetUserData());
+            }
+        }
+
+        Body *qtBody2 = nullptr;
+        {
+            JPH::BodyLockRead bodyLock2(m_jolt->GetBodyLockInterface(), JPH::BodyID(bodyContact.bodyID2));
+            if (bodyLock2.Succeeded()) {
+                const JPH::Body &body = bodyLock2.GetBody();
+                qtBody2 = reinterpret_cast<Body *>(body.GetUserData());
+            }
+        }
+
+        if (qtBody1 && qtBody2) {
+            emit qtBody1->bodyExited(qtBody2);
+            emit qtBody2->bodyExited(qtBody1);
+        }
+    }
 }

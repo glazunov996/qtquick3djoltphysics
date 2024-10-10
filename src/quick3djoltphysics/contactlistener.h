@@ -4,8 +4,10 @@
 #include <QtQuick3DJoltPhysics/qtquick3djoltphysicsglobal.h>
 
 #include <QtQml/QQmlEngine>
-#include <QtGui/QVector3D>
-#include <QtCore/QList>
+#include <QVector3D>
+#include <QList>
+#include <QPair>
+#include <QMutex>
 
 namespace JPH {
 class ContactListener;
@@ -65,18 +67,42 @@ public:
     };
     Q_ENUM(ValidateResult)
 
-    virtual ValidateResult contactValidate(int body1ID, int body2ID, const QVector3D &baseOffset, const CollideShapeResult &collisionResult) = 0;
-    virtual void contactAdded(int body1ID, int body2ID, const ContactManifold &manifold, ContactSettings &settings) = 0;
-    virtual void contactPersisted(int body1ID, int body2ID, const ContactManifold &manifold, ContactSettings &settings) = 0;
-    virtual void contactRemoved(int body1ID, int subShapeID1, int body2ID, int subShapeID2) = 0;
+    struct BodyContact
+    {
+        int bodyID1;
+        int bodyID2;
+        int subShapeID1;
+        int subShapeID2;
+        bool isBodyID1Sensor;
+        bool isBodyID2Sensor;
+    };
+
+    virtual ValidateResult contactValidate(const BodyContact &bodyContact, const QVector3D &baseOffset, const CollideShapeResult &collisionResult) = 0;
+    virtual void contactAdded(const BodyContact &bodyContact, const ContactManifold &manifold, ContactSettings &settings) = 0;
+    virtual void contactPersisted(const BodyContact &bodyContact, const ContactManifold &manifold, ContactSettings &settings) = 0;
+    virtual void contactRemoved(const BodyContact &bodyContact) = 0;
+
+protected:
+    void registerBodyContact(const BodyContact &bodyContact);
+    void registerEnteredBodyContact(const BodyContact &bodyContact);
+    void registerExitedBodyContact(const BodyContact &bodyContact);
 
 private:
+    QList<BodyContact> takeBodyContacts();
+    QList<BodyContact> takeEnteredBodyContacts();
+    QList<BodyContact> takeExitedBodyContacts();
+
     JPH::ContactListener *getJoltContactListener() const;
 
     friend class ContactListenerImpl;
     friend class PhysicsSystem;
 
     JPH::ContactListener *m_impl = nullptr;
+
+    QMutex m_mutex;
+    QList<BodyContact> m_bodyContacts;
+    QList<BodyContact> m_enteredBodyContacts;
+    QList<BodyContact> m_exitedBodyContacts;
 };
 
 Q_DECLARE_METATYPE(ContactManifold)

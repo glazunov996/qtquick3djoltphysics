@@ -32,16 +32,19 @@ void AbstractPhysicsBody::setShape(AbstractShape *shape)
         if (parentItem) {
             m_shape->setParentItem(parentItem);
         } else {
-            const auto &scenManager = QQuick3DObjectPrivate::get(this)->sceneManager;
-            if (scenManager)
-                QQuick3DObjectPrivate::refSceneManager(m_shape, *scenManager);
+            const auto &sceneManager = QQuick3DObjectPrivate::get(this)->sceneManager;
+            if (sceneManager)
+                QQuick3DObjectPrivate::refSceneManager(m_shape, *sceneManager);
         }
     }
 
     m_shapeSignalConnection = QObject::connect(m_shape, &AbstractShape::changed, this,
-                                               [this] { m_shapeDirty = true;
-                                                        updateJoltObject();
-                                                      });
+                                               [this]
+    {
+        m_shapeDirty = true;
+        updateJoltObject();
+    });
+
     QObject::connect(m_shape, &QObject::destroyed, this,
                      [this] { m_shape = nullptr; });
 

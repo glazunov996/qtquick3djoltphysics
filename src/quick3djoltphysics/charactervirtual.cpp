@@ -1,5 +1,8 @@
 #include "charactervirtual_p.h"
 #include "physicsutils_p.h"
+#include "body_p.h"
+
+#include <QtQuick3D/private/qquick3dobject_p.h>
 
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Math/Mat44.h>
@@ -48,6 +51,23 @@ void CharacterVirtual::setMaxSlopeAngle(float maxSlopeAngle)
         m_character->SetMaxSlopeAngle(maxSlopeAngle);
 
     emit maxSlopeAngleChanged(maxSlopeAngle);
+}
+
+bool CharacterVirtual::enhancedInternalEdgeRemoval() const
+{
+    return m_characterSettings.mEnhancedInternalEdgeRemoval;
+}
+
+void CharacterVirtual::setEnhancedInternalEdgeRemoval(bool enhancedInternalEdgeRemoval)
+{
+    if (m_characterSettings.mEnhancedInternalEdgeRemoval == enhancedInternalEdgeRemoval)
+        return;
+
+    m_characterSettings.mEnhancedInternalEdgeRemoval = enhancedInternalEdgeRemoval;
+    if (m_character)
+        m_character->SetEnhancedInternalEdgeRemoval(enhancedInternalEdgeRemoval);
+
+    emit enhancedInternalEdgeRemovalChanged(enhancedInternalEdgeRemoval);
 }
 
 float CharacterVirtual::mass() const
@@ -318,6 +338,78 @@ void CharacterVirtual::setCharacterContactListener(AbstractCharacterContactListe
     emit characterContactListenerChanged(m_characterContactListener);
 }
 
+int CharacterVirtual::innerBodyShapeLayer() const
+{
+    return m_characterSettings.mInnerBodyLayer;
+}
+
+void CharacterVirtual::setInnerBodyShapeLayer(int innerShapeLayer)
+{
+    if (m_characterSettings.mInnerBodyLayer == innerShapeLayer)
+        return;
+
+    if (m_character) {
+        qWarning() << "Warning: Changing 'innerShapeLayer' after character is initialized will have "
+                      "no effect";
+        return;
+    }
+
+    m_characterSettings.mInnerBodyLayer = innerShapeLayer;
+    emit innerBodyShapeLayerChanged(innerShapeLayer);
+}
+
+int CharacterVirtual::innerBodyID() const
+{
+    return m_innerBodyID;
+}
+
+AbstractShape *CharacterVirtual::innerBodyShape() const
+{
+    return m_innerBodyShape;
+}
+
+void CharacterVirtual::setInnerBodyShape(AbstractShape *innerBodyShape)
+{
+    if (m_innerBodyShape == innerBodyShape)
+        return;
+
+    if (m_character) {
+        qWarning() << "Warning: To change character inner shape, the invokable 'setShape' must be called.";
+        return;
+    }
+
+    if (m_innerBodyShape != nullptr)
+        m_innerBodyShape->disconnect(m_innerBodyShapeSignalConnection);
+
+    m_innerBodyShape = innerBodyShape;
+
+    if (m_innerBodyShape->parentItem() == nullptr) {
+        QQuick3DObject *parentItem = qobject_cast<QQuick3DObject *>(innerBodyShape->parent());
+        if (parentItem) {
+            m_innerBodyShape->setParentItem(parentItem);
+        } else {
+            const auto &sceneManager = QQuick3DObjectPrivate::get(this)->sceneManager;
+            if (sceneManager)
+                QQuick3DObjectPrivate::refSceneManager(m_innerBodyShape, *sceneManager);
+        }
+    }
+
+    m_innerBodyShapeSignalConnection = QObject::connect(m_innerBodyShape, &AbstractShape::changed, this,
+                                                    [this]
+    {
+        const auto &shape = getRotatedTranslatedJoltShape(m_innerBodyShape);
+        if (m_character)
+            m_character->SetInnerBodyShape(shape);
+        else
+            m_characterSettings.mInnerBodyShape = shape;
+    });
+
+    QObject::connect(m_innerBodyShape, &QObject::destroyed, this,
+                     [this] { m_innerBodyShape = nullptr; });
+
+    emit innerBodyShapeChanged(m_innerBodyShape);
+}
+
 QVector3D CharacterVirtual::getLinearVelocity() const
 {
     if (m_character == nullptr)
@@ -431,7 +523,7 @@ void CharacterVirtual::updateGroundVelocity()
     m_character->UpdateGroundVelocity();
 }
 
-bool CharacterVirtual::setShape(AbstractShape *shape, float maxPenetrationDepth, int broadPhaseLayerFilter, int objectLayerFilter)
+bool CharacterVirtual::setShape(AbstractShape *shape, AbstractShape *innerShape, float maxPenetrationDepth, int broadPhaseLayerFilter, int objectLayerFilter)
 {
     if (m_character == nullptr) {
         qWarning() << "Warning: Invoking 'setShape' before character is initialized will have no effect";
@@ -440,11 +532,11 @@ bool CharacterVirtual::setShape(AbstractShape *shape, float maxPenetrationDepth,
 
     AbstractPhysicsBody::setShape(shape);
 
-    const auto &inShape = getRotatedTranslatedJoltShape();
-    if (inShape == nullptr)
+    const auto &joltShape = getRotatedTranslatedJoltShape(shape);
+    if (joltShape == nullptr)
         return false;
 
-    if (!m_character->SetShape(inShape,
+    if (!m_character->SetShape(joltShape,
                                maxPenetrationDepth,
                                m_jolt->GetDefaultBroadPhaseLayerFilter(broadPhaseLayerFilter),
                                m_jolt->GetDefaultLayerFilter(objectLayerFilter),
@@ -453,6 +545,9 @@ bool CharacterVirtual::setShape(AbstractShape *shape, float maxPenetrationDepth,
                                *m_tempAllocator)) {
         return false;
     }
+
+    if (innerShape)
+        m_character->SetInnerBodyShape(getRotatedTranslatedJoltShape(innerShape));
 
     sync();
 
@@ -464,8 +559,11 @@ void CharacterVirtual::updateJoltObject()
     if (m_jolt == nullptr || m_shape == nullptr)
         return;
 
-    if (!m_character) {
-        const auto &shape = getRotatedTranslatedJoltShape();
+    if (m_character) {
+        if (m_shapeDirty)
+            qWarning() << "Warning: To change character shape, the invokable 'setShape' must be called.";
+    } else {
+        const auto &shape = getRotatedTranslatedJoltShape(m_shape);
         if (shape == nullptr)
             return;
 
@@ -475,11 +573,21 @@ void CharacterVirtual::updateJoltObject()
         m_characterSettings.mMaxSlopeAngle = qDegreesToRadians(m_maxSlopeAngle);
         m_characterSettings.mUp = PhysicsUtils::toJoltType(up());
 
+        if (m_innerBodyShape)
+            m_characterSettings.mInnerBodyShape = getRotatedTranslatedJoltShape(m_innerBodyShape);
+
         m_character = new JPH::CharacterVirtual(
             &m_characterSettings, PhysicsUtils::toJoltType(scenePosition()), PhysicsUtils::toJoltType(sceneRotation()), 0, m_jolt);
 
+        m_character->SetUserData(reinterpret_cast<JPH::uint64>(this));
+
         if (m_characterContactListener)
             m_character->SetListener(m_characterContactListener->getJoltCharacterContactListener());
+
+        if (m_innerBodyShape) {
+            m_innerBodyID = static_cast<int>(m_character->GetInnerBodyID().GetIndexAndSequenceNumber());
+            emit innerBodyIDChanged(m_innerBodyID);
+        }
 
         sync();
     }
@@ -500,8 +608,7 @@ void CharacterVirtual::sync()
     if (m_character == nullptr)
         return;
 
-    QVector3D position = PhysicsUtils::toQtType(
-                    m_character->GetCenterOfMassTransform().GetColumn3(3));
+    QVector3D position = PhysicsUtils::toQtType(m_character->GetCenterOfMassTransform().GetColumn3(3));
     const QQuick3DNode *parentNode = static_cast<QQuick3DNode *>(parentItem());
 
     m_syncing = true;
@@ -513,6 +620,29 @@ void CharacterVirtual::sync()
     }
 
     m_syncing = false;
+
+    emitContactCallbacks();
+}
+
+void CharacterVirtual::emitContactCallbacks()
+{
+    if (m_characterContactListener == nullptr)
+        return;
+
+    auto contacts = m_characterContactListener->takeContacts();
+    for (const auto &contact : std::as_const(contacts)) {
+        Body *qtBody = nullptr;
+        {
+            JPH::BodyLockRead bodyLock(m_jolt->GetBodyLockInterface(), JPH::BodyID(contact.bodyID2));
+            if (bodyLock.Succeeded()) {
+                const JPH::Body &body = bodyLock.GetBody();
+                qtBody = reinterpret_cast<Body *>(body.GetUserData());
+            }
+        }
+
+        if (qtBody)
+            emit qtBody->bodyContact(this);
+    }
 }
 
 void CharacterVirtual::handleUpChanged()
@@ -529,8 +659,6 @@ void CharacterVirtual::handleScenePositionChanged()
         return;
 
     m_character->SetPosition(PhysicsUtils::toJoltType(scenePosition()));
-
-    sync();
 }
 
 void CharacterVirtual::handleSceneRotationChanged()

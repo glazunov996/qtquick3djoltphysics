@@ -23,6 +23,7 @@ class Q_QUICK3DJOLTPHYSICS_EXPORT Body : public AbstractPhysicsBody
     Q_PROPERTY(CollisionGroup *collisionGroup READ collisionGroup WRITE setCollisionGroup NOTIFY collisionGroupChanged)
     Q_PROPERTY(MotionType motionType READ motionType WRITE setMotionType NOTIFY motionTypeChanged)
     Q_PROPERTY(MotionQuality motionQuality READ motionQuality WRITE setMotionQuality NOTIFY motionQualityChanged)
+    Q_PROPERTY(bool enhancedInternalEdgeRemoval READ enhancedInternalEdgeRemoval WRITE setEnhancedInternalEdgeRemoval NOTIFY enhancedInternalEdgeRemovalChanged)
     Q_PROPERTY(int objectLayer READ objectLayer WRITE setObjectLayer NOTIFY objectLayerChanged)
     Q_PROPERTY(bool usedInSimulation READ usedInSimulation WRITE setUsedInSimulation NOTIFY usedInSimulationChanged)
     Q_PROPERTY(bool allowSleeping READ allowSleeping WRITE setAllowSleeping NOTIFY allowSleepingChanged)
@@ -80,6 +81,8 @@ public:
     void setMotionType(MotionType motionType);
     MotionQuality motionQuality() const;
     void setMotionQuality(MotionQuality motionQuality);
+    bool enhancedInternalEdgeRemoval() const;
+    void setEnhancedInternalEdgeRemoval(bool enhancedInternalEdgeRemoval);
     int objectLayer() const;
     void setObjectLayer(int objectLayer);
     bool usedInSimulation() const;
@@ -125,6 +128,10 @@ public:
     Q_INVOKABLE void addForce(const QVector3D &force, const QVector3D &position);
     Q_INVOKABLE void addTorque(const QVector3D &torque);
 
+    Q_INVOKABLE void resetForce();
+    Q_INVOKABLE void resetTorque();
+    Q_INVOKABLE void resetMotion();
+
     Q_INVOKABLE void addImpulse(const QVector3D &impulse);
     Q_INVOKABLE void addImpulse(const QVector3D &impulse, const QVector3D &position);
     Q_INVOKABLE void addAngularImpulse(const QVector3D &angularImpulse);
@@ -136,6 +143,7 @@ signals:
     void collisionGroupChanged(CollisionGroup *collisionGroup);
     void motionTypeChanged(MotionType motionType);
     void motionQualityChanged(MotionQuality motionQuality);
+    void enhancedInternalEdgeRemovalChanged(bool enhancedInternalEdgeRemoval);
     void objectLayerChanged(int objectLayer);
     void usedInSimulationChanged(bool usedInSimulation);
     void allowSleepingChanged(bool allowSleeping);
@@ -150,6 +158,10 @@ signals:
     void linearDampingChanged(float linearDamping);
     void angularDampingChanged(float angularDamping);
     void gravityFactorChanged(float gravityFactor);
+
+    void bodyContact(AbstractPhysicsBody *body);
+    void bodyEntered(AbstractPhysicsBody *body);
+    void bodyExited(AbstractPhysicsBody *body);
 
 protected:
     void updateJoltObject() override;

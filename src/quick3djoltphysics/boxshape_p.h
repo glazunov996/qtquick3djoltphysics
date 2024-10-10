@@ -24,7 +24,7 @@ signals:
     void extentsChanged(const QVector3D &extents);
 
 private:
-    QVector3D m_extents = QVector3D(100.0f, 100.0f, 100.0f);
+    QVector3D m_extents = QVector3D(1.0f, 1.0f, 1.0f);
 };
 
 #endif // BOXSHAPE_P_H

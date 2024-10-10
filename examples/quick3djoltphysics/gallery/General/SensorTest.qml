@@ -17,8 +17,6 @@ Item {
     readonly property int sensor: 3
 
     property real time: 0
-
-    property alias sensorIDs: contactListener.sensorIDs
     property var bodies: []
 
     readonly property real worldScale: 0.2
@@ -66,7 +64,7 @@ Item {
         var centrifugalForce = 10.0
         var gravity = physicsSystem.gravity
 
-        var bodiesInSensor = contactListener.getBodiesInSensor(0);
+        var bodiesInSensor = contactListener.getBodiesInSensor(sensor1.bodyID);
         for (var i = 0; i < bodiesInSensor.length; ++i) {
             var bodyID = bodiesInSensor[i];
             var body = null;
@@ -172,7 +170,6 @@ Item {
                 scale: Qt.vector3d(0.2, 0.2, 0.2)
                 castsShadows: false
             }
-            onBodyIDChanged: sensorIDs.push(sensor1.bodyID)
         }
 
         // A static sensor that only detects active bodies
@@ -193,7 +190,6 @@ Item {
                 scale: Qt.vector3d(0.1, 0.1, 0.1)
                 castsShadows: false
             }
-            onBodyIDChanged: sensorIDs.push(sensor2.bodyID)
         }
 
         // Dynamic bodies
