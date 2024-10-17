@@ -26,9 +26,6 @@ public:
         InAir
     };
     Q_ENUM(GroundState)
-
-protected:
-    static JPH::Ref<JPH::Shape> getRotatedTranslatedJoltShape(AbstractShape *shape);
 };
 
 #endif // ABSTRACTPHYSICSCHARACTER_P_H

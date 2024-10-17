@@ -4,6 +4,7 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 BoxShape::BoxShape(QQuick3DNode *parent) : AbstractShape(parent)
 {
@@ -28,13 +29,7 @@ void BoxShape::setExtents(const QVector3D &extents)
     emit changed();
 }
 
-void BoxShape::updateJoltShape()
+void BoxShape::createJoltShape()
 {
-    if (!m_shapeInitialized)
-        return;
-
-    m_shape = new JPH::BoxShape(PhysicsUtils::toJoltType(m_extents * sceneScale() * 0.5f), 0.0f);
-
-    updateConvexShapeDensity();
-    updateOffsetCenterOfMass();
+    m_shape = new JPH::BoxShape(PhysicsUtils::toJoltType(m_extents * 0.5f), 0.0f);
 }

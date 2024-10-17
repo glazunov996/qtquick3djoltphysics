@@ -44,14 +44,7 @@ void CylinderShape::setHeight(float height)
     emit changed();
 }
 
-void CylinderShape::updateJoltShape()
+void CylinderShape::createJoltShape()
 {
-    if (!m_shapeInitialized)
-        return;
-
-    auto s = sceneScale();
-    m_shape = new JPH::CylinderShape(m_height * 0.5f * s.y(), m_diameter * 0.5f * s.y());
-
-    updateConvexShapeDensity();
-    updateOffsetCenterOfMass();
+    m_shape = new JPH::CylinderShape(m_height * 0.5f, m_diameter * 0.5f, 0.0f);
 }

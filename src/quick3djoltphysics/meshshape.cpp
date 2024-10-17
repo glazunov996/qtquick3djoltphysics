@@ -12,6 +12,7 @@
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 #include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 #include <QDebug>
 
@@ -509,7 +510,7 @@ void MeshShape::setGeometry(QQuick3DGeometry *newGeometry)
     emit changed();
 }
 
-void MeshShape::updateJoltShape()
+void MeshShape::createJoltShape()
 {
     if (m_mesh == nullptr)
         return;
@@ -520,5 +521,4 @@ void MeshShape::updateJoltShape()
 
     auto shapeResult = meshShapeSettings->Create();
     m_shape = shapeResult.Get();
-    m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
 }

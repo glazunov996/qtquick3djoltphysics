@@ -27,7 +27,7 @@ signals:
     void geometryChanged();
 
 protected:
-    void updateJoltShape() override;
+    void createJoltShape() override;
 
     Mesh *m_mesh = nullptr;
 

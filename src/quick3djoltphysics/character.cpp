@@ -181,7 +181,7 @@ bool Character::setShape(AbstractShape *shape, float maxPenetrationDepth)
 
     AbstractPhysicsBody::setShape(shape);
 
-    const auto &joltShape = getRotatedTranslatedJoltShape(shape);
+    const auto &joltShape = shape->getJoltShape();
     if (joltShape == nullptr)
         return false;
 
@@ -197,7 +197,7 @@ void Character::updateJoltObject()
         if (m_shapeDirty)
             qWarning() << "Warning: To change character shape, the invokable 'setShape' must be called.";
     } else {
-        const auto &shape = getRotatedTranslatedJoltShape(m_shape);
+        const auto &shape = m_shape->getJoltShape();
         if (shape == nullptr)
             return;
 

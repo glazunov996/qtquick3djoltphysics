@@ -21,7 +21,7 @@ public:
     const QVector<AbstractShape *> &getShapesList() const;
 
 protected:
-    void updateJoltShape() override;
+    void createJoltShape() override;
 
 private:
     static void qmlAppendShape(QQmlListProperty<AbstractShape> *list, AbstractShape *shape);

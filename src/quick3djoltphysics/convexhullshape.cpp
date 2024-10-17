@@ -6,6 +6,7 @@
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 #include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 ConvexHullShape::ConvexHullShape(QQuick3DNode *parent) : MeshShape(parent)
 {
@@ -13,7 +14,7 @@ ConvexHullShape::ConvexHullShape(QQuick3DNode *parent) : MeshShape(parent)
 
 ConvexHullShape::~ConvexHullShape() = default;
 
-void ConvexHullShape::updateJoltShape()
+void ConvexHullShape::createJoltShape()
 {
     if (m_mesh == nullptr)
         return;
@@ -24,9 +25,4 @@ void ConvexHullShape::updateJoltShape()
 
     auto shapeResult = convexHullShapeSettings->Create();
     m_shape = shapeResult.Get();
-
-    updateConvexShapeDensity();
-    updateOffsetCenterOfMass();
-
-    m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
 }

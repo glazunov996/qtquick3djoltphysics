@@ -12,7 +12,7 @@ public:
     ~ConvexHullShape() override;
 
 protected:
-    void updateJoltShape() override;
+    void createJoltShape() override;
 };
 
 #endif // CONVEXHULLSHAPE_P_H

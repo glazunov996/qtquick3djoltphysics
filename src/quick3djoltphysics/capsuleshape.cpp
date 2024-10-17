@@ -3,6 +3,7 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 CapsuleShape::CapsuleShape(QQuick3DNode *parent) : AbstractShape(parent)
 {
@@ -44,14 +45,7 @@ void CapsuleShape::setHeight(float height)
     emit changed();
 }
 
-void CapsuleShape::updateJoltShape()
+void CapsuleShape::createJoltShape()
 {
-    if (!m_shapeInitialized)
-        return;
-
-    auto s = sceneScale();
-    m_shape = new JPH::CapsuleShape(m_height * 0.5f * s.y(), m_diameter * 0.5f * s.y());
-
-    updateConvexShapeDensity();
-    updateOffsetCenterOfMass();
+    m_shape = new JPH::CapsuleShape(m_height * 0.5f, m_diameter * 0.5f);
 }

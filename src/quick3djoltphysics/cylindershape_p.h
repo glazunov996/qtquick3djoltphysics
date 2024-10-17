@@ -24,7 +24,7 @@ signals:
     void heightChanged(float height);
 
 protected:
-    void updateJoltShape() override;
+    void createJoltShape() override;
 
 private:
     float m_diameter = 1.0f;

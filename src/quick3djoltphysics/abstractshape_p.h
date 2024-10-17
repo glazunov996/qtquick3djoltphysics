@@ -32,17 +32,16 @@ signals:
     void changed();
 
 protected:
-    virtual void updateJoltShape() = 0;
+    virtual void createJoltShape() = 0;
     virtual JPH::Ref<JPH::Shape> getJoltShape();
 
-    void updateConvexShapeDensity();
-    void updateOffsetCenterOfMass();
+    void updateJoltShape();
 
     JPH::Ref<JPH::Shape> m_shape = nullptr;
     bool m_shapeInitialized = false;
 
 private slots:
-    void handleScaleChanged();
+    void handleNodeChanged();
 
 private:
     float m_density = 1000.0f;
@@ -50,8 +49,8 @@ private:
 
     friend class Body;
     friend class StaticCompoundShape;
-    friend class AbstractPhysicsCharacter;
     friend class CharacterVirtual;
+    friend class Character;
 };
 
 #endif // ABSTRACTSHAPE_P_H

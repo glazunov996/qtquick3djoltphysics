@@ -27,14 +27,7 @@ void SphereShape::setDiameter(float diameter)
     emit changed();
 }
 
-void SphereShape::updateJoltShape()
+void SphereShape::createJoltShape()
 {
-    if (!m_shapeInitialized)
-        return;
-
-    auto s = sceneScale();
-    m_shape = new JPH::SphereShape(m_diameter * 0.5f * s.x());
-
-    updateConvexShapeDensity();
-    updateOffsetCenterOfMass();
+    m_shape = new JPH::SphereShape(m_diameter * 0.5f);
 }

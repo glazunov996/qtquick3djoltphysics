@@ -397,7 +397,7 @@ void CharacterVirtual::setInnerBodyShape(AbstractShape *innerBodyShape)
     m_innerBodyShapeSignalConnection = QObject::connect(m_innerBodyShape, &AbstractShape::changed, this,
                                                     [this]
     {
-        const auto &shape = getRotatedTranslatedJoltShape(m_innerBodyShape);
+        const auto &shape = m_innerBodyShape->getJoltShape();
         if (m_character)
             m_character->SetInnerBodyShape(shape);
         else
@@ -532,7 +532,7 @@ bool CharacterVirtual::setShape(AbstractShape *shape, AbstractShape *innerShape,
 
     AbstractPhysicsBody::setShape(shape);
 
-    const auto &joltShape = getRotatedTranslatedJoltShape(shape);
+    const auto &joltShape = shape->getJoltShape();
     if (joltShape == nullptr)
         return false;
 
@@ -547,7 +547,7 @@ bool CharacterVirtual::setShape(AbstractShape *shape, AbstractShape *innerShape,
     }
 
     if (innerShape)
-        m_character->SetInnerBodyShape(getRotatedTranslatedJoltShape(innerShape));
+        m_character->SetInnerBodyShape(innerShape->getJoltShape());
 
     sync();
 
@@ -563,7 +563,7 @@ void CharacterVirtual::updateJoltObject()
         if (m_shapeDirty)
             qWarning() << "Warning: To change character shape, the invokable 'setShape' must be called.";
     } else {
-        const auto &shape = getRotatedTranslatedJoltShape(m_shape);
+        const auto &shape = m_shape->getJoltShape();
         if (shape == nullptr)
             return;
 
@@ -574,7 +574,7 @@ void CharacterVirtual::updateJoltObject()
         m_characterSettings.mUp = PhysicsUtils::toJoltType(up());
 
         if (m_innerBodyShape)
-            m_characterSettings.mInnerBodyShape = getRotatedTranslatedJoltShape(m_innerBodyShape);
+            m_characterSettings.mInnerBodyShape = m_innerBodyShape->getJoltShape();
 
         m_character = new JPH::CharacterVirtual(
             &m_characterSettings, PhysicsUtils::toJoltType(scenePosition()), PhysicsUtils::toJoltType(sceneRotation()), 0, m_jolt);

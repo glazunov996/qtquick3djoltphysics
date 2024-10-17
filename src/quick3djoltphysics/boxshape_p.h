@@ -18,7 +18,7 @@ public:
     void setExtents(const QVector3D &extents);
 
 protected:
-    void updateJoltShape() override;
+    void createJoltShape() override;
 
 signals:
     void extentsChanged(const QVector3D &extents);

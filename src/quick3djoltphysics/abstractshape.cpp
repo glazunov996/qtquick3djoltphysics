@@ -1,12 +1,18 @@
 #include "abstractshape_p.h"
 #include "physicsutils_p.h"
 
+#include <QtQuick3D>
+
 #include <Jolt/Physics/Collision/Shape/ConvexShape.h>
 #include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
+#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 AbstractShape::AbstractShape(QQuick3DNode *parent) : QQuick3DNode(parent)
 {
-    connect(this, &QQuick3DNode::sceneScaleChanged, this, &AbstractShape::handleScaleChanged);
+    connect(this, &QQuick3DNode::positionChanged, this, &AbstractShape::handleNodeChanged);
+    connect(this, &QQuick3DNode::rotationChanged, this, &AbstractShape::handleNodeChanged);
+    connect(this, &QQuick3DNode::sceneScaleChanged, this, &AbstractShape::handleNodeChanged);
 }
 
 AbstractShape::~AbstractShape() = default;
@@ -55,24 +61,31 @@ JPH::Ref<JPH::Shape> AbstractShape::getJoltShape()
     return m_shape;
 }
 
-void AbstractShape::updateConvexShapeDensity()
+void AbstractShape::updateJoltShape()
 {
-    if (m_shape == nullptr || m_shape->GetType() != JPH::EShapeType::Convex)
+    if (!m_shapeInitialized)
         return;
 
-    auto *convexShape = reinterpret_cast<JPH::ConvexShape *>(m_shape.GetPtr());
-    convexShape->SetDensity(m_density);
+    createJoltShape();
+
+    Q_ASSERT(m_shape);
+
+    if (m_shape->GetType() == JPH::EShapeType::Convex) {
+        auto *convexShape = reinterpret_cast<JPH::ConvexShape *>(m_shape.GetPtr());
+        convexShape->SetDensity(m_density);
+    }
+
+    if (!qFuzzyCompare(m_offsetCenterOfMass, QVector3D()))
+        m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(m_offsetCenterOfMass));
+
+    if (!qFuzzyCompare(sceneScale(), QVector3D(1, 1, 1)))
+        m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
+
+    if (!qFuzzyCompare(position(), QVector3D()) || !qFuzzyCompare(rotation(), QQuaternion()))
+        m_shape = new JPH::RotatedTranslatedShape(PhysicsUtils::toJoltType(position()), PhysicsUtils::toJoltType(rotation()), m_shape);
 }
 
-void AbstractShape::updateOffsetCenterOfMass()
-{
-    if (m_shape == nullptr || qFuzzyCompare(m_offsetCenterOfMass, QVector3D()))
-        return;
-
-    m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(m_offsetCenterOfMass));
-}
-
-void AbstractShape::handleScaleChanged()
+void AbstractShape::handleNodeChanged()
 {
     updateJoltShape();
 

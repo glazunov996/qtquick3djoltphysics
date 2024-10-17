@@ -19,7 +19,7 @@ signals:
     void diameterChanged(float diameter);
 
 protected:
-    void updateJoltShape() override;
+    void createJoltShape() override;
 
 private:
     float m_diameter = 1.0f;

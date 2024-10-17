@@ -4,8 +4,6 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
-#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
-#include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
 
 StaticCompoundShape::StaticCompoundShape(QQuick3DNode *parent) : AbstractShape(parent)
 {
@@ -25,7 +23,7 @@ const QVector<AbstractShape *> &StaticCompoundShape::getShapesList() const
     return m_shapes;
 }
 
-void StaticCompoundShape::updateJoltShape()
+void StaticCompoundShape::createJoltShape()
 {
     JPH::StaticCompoundShapeSettings staticCompoundSettings;
     for (auto *shape : std::as_const(m_shapes)) {
@@ -35,11 +33,6 @@ void StaticCompoundShape::updateJoltShape()
 
     auto shapeResult = staticCompoundSettings.Create();
     m_shape = shapeResult.Get();
-
-    updateConvexShapeDensity();
-    updateOffsetCenterOfMass();
-
-    m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
 }
 
 void StaticCompoundShape::qmlAppendShape(QQmlListProperty<AbstractShape> *list, AbstractShape *shape)
