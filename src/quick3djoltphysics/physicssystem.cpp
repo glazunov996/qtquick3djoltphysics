@@ -12,6 +12,8 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Collision/CastResult.h>
 #include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
+#include <Jolt/Physics/Collision/CollidePointResult.h>
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Body/BodyLock.h>
 
@@ -428,9 +430,13 @@ static RayCastResult getRayCastHitResult(JPH::PhysicsSystem *jolt, const JPH::RR
         JPH::Body &joltBody = lock.GetBody();
         body = reinterpret_cast<Body *>(joltBody.GetUserData());
 
+        const auto &position = ray.GetPointOnRay(hit.mFraction);
+        const auto &normal = joltBody.GetWorldSpaceSurfaceNormal(hit.mSubShapeID2, position);
+
         return RayCastResult(
             body,
-            PhysicsUtils::toQtType(ray.GetPointOnRay(hit.mFraction)),
+            PhysicsUtils::toQtType(position),
+            PhysicsUtils::toQtType(normal),
             hit.mFraction);
     }
 
@@ -470,6 +476,28 @@ RayCastResult PhysicsSystem::castRay(const QVector3D &origin, const QVector3D &d
         return getRayCastHitResult(m_jolt, ray, hit);
 
     return RayCastResult();
+}
+
+QVector<Body *> PhysicsSystem::collidePoint(const QVector3D &point) const
+{
+    JPH::AllHitCollisionCollector<JPH::CollidePointCollector> collector;
+    m_jolt->GetNarrowPhaseQuery().CollidePoint(PhysicsUtils::toJoltType(point), collector);
+
+    QVector<Body *> hitBodies;
+
+    bool hadHit = !collector.mHits.empty();
+    if (hadHit) {
+        for (const auto &hit : collector.mHits) {
+            JPH::BodyLockRead lock(m_jolt->GetBodyLockInterface(), hit.mBodyID);
+            if (lock.Succeeded()) {
+                const JPH::Body &joltBody = lock.GetBody();
+                Body *body = reinterpret_cast<Body *>(joltBody.GetUserData());
+                hitBodies.push_back(body);
+            }
+        }
+    }
+
+    return hitBodies;
 }
 
 void PhysicsSystem::initPhysics()

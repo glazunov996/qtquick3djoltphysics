@@ -44,7 +44,24 @@ void CylinderShape::setHeight(float height)
     emit changed();
 }
 
+float CylinderShape::convexRadius() const
+{
+    return m_convexRadius;
+}
+
+void CylinderShape::setConvexRadius(float convexRadius)
+{
+    if (qFuzzyCompare(convexRadius, m_convexRadius))
+        return;
+
+    m_convexRadius = convexRadius;
+    updateJoltShape();
+
+    emit convexRadiusChanged(m_convexRadius);
+    emit changed();
+}
+
 void CylinderShape::createJoltShape()
 {
-    m_shape = new JPH::CylinderShape(m_height * 0.5f, m_diameter * 0.5f, 0.0f);
+    m_shape = new JPH::CylinderShape(m_height * 0.5f, m_diameter * 0.5f, m_convexRadius);
 }

@@ -94,6 +94,7 @@ public:
 
     Q_INVOKABLE RayCastResult castRay(const QVector3D &origin, const QVector3D &direction) const;
     Q_INVOKABLE RayCastResult castRay(const QVector3D &origin, const QVector3D &direction, unsigned int broadPhaseLayerFilter, unsigned int objectLayerFilter) const;
+    Q_INVOKABLE QVector<Body *> collidePoint(const QVector3D &point) const;
 
 signals:
     void settingsChanged(PhysicsSettings *settings);

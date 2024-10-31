@@ -48,7 +48,6 @@ public:
 
         AbstractCharacterContactListener::Contact contact;
         contact.bodyID2 = inBodyID2.GetIndexAndSequenceNumber();
-        contact.subShapeID2 = inSubShapeID2.GetValue();
         contact.contactPosition = PhysicsUtils::toQtType(inContactPosition);
         contact.contactNormal = PhysicsUtils::toQtType(inContactNormal);
 
@@ -67,7 +66,6 @@ public:
 
         AbstractCharacterContactListener::Contact contact;
         contact.bodyID2 = inBodyID2.GetIndexAndSequenceNumber();
-        contact.subShapeID2 = inSubShapeID2.GetValue();
         contact.contactPosition = PhysicsUtils::toQtType(inContactPosition);
         contact.contactNormal = PhysicsUtils::toQtType(inContactNormal);
 

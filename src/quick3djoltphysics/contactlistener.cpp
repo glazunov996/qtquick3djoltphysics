@@ -14,8 +14,6 @@ static inline CollideShapeResult toCollideShapeResultType(const JPH::CollideShap
     collisionResult.contactPointOn2 = PhysicsUtils::toQtType(inCollisionResult.mContactPointOn2);
     collisionResult.penetrationAxis = PhysicsUtils::toQtType(inCollisionResult.mPenetrationAxis);
     collisionResult.penetrationDepth = inCollisionResult.mPenetrationDepth;
-    collisionResult.subShapeID1 = inCollisionResult.mSubShapeID1.GetValue();
-    collisionResult.subShapeID2 = inCollisionResult.mSubShapeID2.GetValue();
     collisionResult.bodyID2 = inCollisionResult.mBodyID2.GetIndexAndSequenceNumber();
 
     for (const auto &face : inCollisionResult.mShape1Face)
@@ -33,8 +31,6 @@ static inline ContactManifold toContactManifoldType(const JPH::ContactManifold &
     manifold.baseOffset = PhysicsUtils::toQtType(inManifold.mBaseOffset);
     manifold.worldSpaceNormal = PhysicsUtils::toQtType(inManifold.mWorldSpaceNormal);
     manifold.penetrationDepth = inManifold.mPenetrationDepth;
-    manifold.subShapeID1 = inManifold.mSubShapeID1.GetValue();
-    manifold.subShapeID2 = inManifold.mSubShapeID2.GetValue();
 
     for (const auto &point : inManifold.mRelativeContactPointsOn1)
         manifold.relativeContactPointsOn1.push_back(PhysicsUtils::toQtType(point));
@@ -87,8 +83,6 @@ public:
         AbstractContactListener::BodyContact bodyContact;
         bodyContact.bodyID1 = inBody1.GetID().GetIndexAndSequenceNumber();
         bodyContact.bodyID2 = inBody2.GetID().GetIndexAndSequenceNumber();
-        bodyContact.subShapeID1 = 0;
-        bodyContact.subShapeID2 = 0;
         bodyContact.isBodyID1Sensor = inBody1.IsSensor();
         bodyContact.isBodyID2Sensor = inBody2.IsSensor();
 
@@ -103,8 +97,6 @@ public:
         AbstractContactListener::BodyContact bodyContact;
         bodyContact.bodyID1 = inBody1.GetID().GetIndexAndSequenceNumber();
         bodyContact.bodyID2 = inBody2.GetID().GetIndexAndSequenceNumber();
-        bodyContact.subShapeID1 = 0;
-        bodyContact.subShapeID2 = 0;
         bodyContact.isBodyID1Sensor = inBody1.IsSensor();
         bodyContact.isBodyID2Sensor = inBody2.IsSensor();
 
@@ -121,8 +113,6 @@ public:
         AbstractContactListener::BodyContact bodyContact;
         bodyContact.bodyID1 = inBody1.GetID().GetIndexAndSequenceNumber();
         bodyContact.bodyID2 = inBody2.GetID().GetIndexAndSequenceNumber();
-        bodyContact.subShapeID1 = 0;
-        bodyContact.subShapeID2 = 0;
         bodyContact.isBodyID1Sensor = inBody1.IsSensor();
         bodyContact.isBodyID2Sensor = inBody2.IsSensor();
 
@@ -136,8 +126,6 @@ public:
         AbstractContactListener::BodyContact bodyContact;
         bodyContact.bodyID1 = inSubShapePair.GetBody1ID().GetIndexAndSequenceNumber();
         bodyContact.bodyID2 = inSubShapePair.GetBody2ID().GetIndexAndSequenceNumber();
-        bodyContact.subShapeID1 = inSubShapePair.GetSubShapeID1().GetValue();
-        bodyContact.subShapeID2 = inSubShapePair.GetSubShapeID2().GetValue();
         bodyContact.isBodyID1Sensor = false;
         bodyContact.isBodyID2Sensor = false;
 

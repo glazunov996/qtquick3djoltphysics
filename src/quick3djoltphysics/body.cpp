@@ -21,6 +21,23 @@ int Body::bodyID() const
     return m_bodyID;
 }
 
+bool Body::isSensor() const
+{
+    return m_bodySettings.mIsSensor;
+}
+
+void Body::setIsSensor(bool isSensor)
+{
+    if (m_bodySettings.mIsSensor == isSensor)
+        return;
+
+    m_bodySettings.mIsSensor = isSensor;
+    if (m_body)
+        m_body->SetIsSensor(isSensor);
+
+    isSensorChanged(isSensor);
+}
+
 CollisionGroup *Body::collisionGroup() const
 {
     return m_collisionGroup;
@@ -597,7 +614,7 @@ void Body::cleanup()
 void Body::sync()
 {
     const auto activationMode = getActivationForMotionType();
-    if (m_body == nullptr || activationMode == JPH::EActivation::DontActivate)
+    if (m_body == nullptr || !m_usedInSimulation || activationMode == JPH::EActivation::DontActivate)
         return;
 
     auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();

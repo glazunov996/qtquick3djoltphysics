@@ -485,7 +485,7 @@ void CharacterVirtual::extendedUpdate(float deltaTime,
         inSettings.mWalkStairsStepUp = PhysicsUtils::toJoltType(updateSettings->walkStairsStepUp);
         inSettings.mWalkStairsMinStepForward = updateSettings->walkStairsMinStepForward;
         inSettings.mWalkStairsStepForwardTest = updateSettings->walkStairsStepForwardTest;
-        inSettings.mWalkStairsCosAngleForwardContact = qCos(qDegreesToRadians(updateSettings->walkStairsCosAngleForwardContact));
+        inSettings.mWalkStairsCosAngleForwardContact = updateSettings->walkStairsCosAngleForwardContact;
         inSettings.mWalkStairsStepDownExtra = PhysicsUtils::toJoltType(updateSettings->walkStairsStepDownExtra);
     }
 
@@ -559,10 +559,7 @@ void CharacterVirtual::updateJoltObject()
     if (m_jolt == nullptr || m_shape == nullptr)
         return;
 
-    if (m_character) {
-        if (m_shapeDirty)
-            qWarning() << "Warning: To change character shape, the invokable 'setShape' must be called.";
-    } else {
+    if (m_character == nullptr) {
         const auto &shape = m_shape->getJoltShape();
         if (shape == nullptr)
             return;

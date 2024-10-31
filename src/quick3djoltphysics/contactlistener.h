@@ -19,8 +19,6 @@ struct Q_QUICK3DJOLTPHYSICS_EXPORT CollideShapeResult
     QVector3D contactPointOn2;
     QVector3D penetrationAxis;
     float penetrationDepth;
-    int subShapeID1;
-    int subShapeID2;
     int bodyID2;
     QList<QVector3D> shape1Face;
     QList<QVector3D> shape2Face;
@@ -31,8 +29,6 @@ struct Q_QUICK3DJOLTPHYSICS_EXPORT ContactManifold
     QVector3D baseOffset;
     QVector3D worldSpaceNormal;
     float penetrationDepth;
-    int subShapeID1;
-    int subShapeID2;
     QList<QVector3D> relativeContactPointsOn1;
     QList<QVector3D> relativeContactPointsOn2;
 };
@@ -71,8 +67,6 @@ public:
     {
         int bodyID1;
         int bodyID2;
-        int subShapeID1;
-        int subShapeID2;
         bool isBodyID1Sensor;
         bool isBodyID2Sensor;
     };

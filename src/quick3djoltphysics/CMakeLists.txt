@@ -40,7 +40,6 @@ qt_internal_add_qml_module(Quick3DJoltPhysics
         qtquick3djoltphysicsglobal.h
         qtquick3djoltphysicsglobal_p.h
         raycastresult_p.h raycastresult.cpp
-        sensor_p.h sensor.cpp
         sphereshape_p.h sphereshape.cpp
         springsettings_p.h springsettings.cpp
         staticcompoundshape_p.h staticcompoundshape.cpp

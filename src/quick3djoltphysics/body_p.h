@@ -20,6 +20,7 @@ class Q_QUICK3DJOLTPHYSICS_EXPORT Body : public AbstractPhysicsBody
 {
     Q_OBJECT
     Q_PROPERTY(int bodyID READ bodyID NOTIFY bodyIDChanged)
+    Q_PROPERTY(bool isSensor READ isSensor WRITE setIsSensor NOTIFY isSensorChanged)
     Q_PROPERTY(CollisionGroup *collisionGroup READ collisionGroup WRITE setCollisionGroup NOTIFY collisionGroupChanged)
     Q_PROPERTY(MotionType motionType READ motionType WRITE setMotionType NOTIFY motionTypeChanged)
     Q_PROPERTY(MotionQuality motionQuality READ motionQuality WRITE setMotionQuality NOTIFY motionQualityChanged)
@@ -75,6 +76,8 @@ public:
     Q_ENUM(OverrideMassProperties)
 
     int bodyID() const;
+    bool isSensor() const;
+    void setIsSensor(bool isSensor);
     CollisionGroup *collisionGroup() const;
     void setCollisionGroup(CollisionGroup *collisionGroup);
     MotionType motionType() const;
@@ -140,6 +143,7 @@ public:
 
 signals:
     void bodyIDChanged(int bodyID);
+    void isSensorChanged(bool isSensor);
     void collisionGroupChanged(CollisionGroup *collisionGroup);
     void motionTypeChanged(MotionType motionType);
     void motionQualityChanged(MotionQuality motionQuality);
@@ -167,8 +171,6 @@ protected:
     void updateJoltObject() override;
     void cleanup() override;
     void sync() override;
-
-    virtual bool isSensor() const { return false; }
 
 private slots:
     void handleScenePositionChanged();

@@ -29,7 +29,24 @@ void BoxShape::setExtents(const QVector3D &extents)
     emit changed();
 }
 
+float BoxShape::convexRadius() const
+{
+    return m_convexRadius;
+}
+
+void BoxShape::setConvexRadius(float convexRadius)
+{
+    if (qFuzzyCompare(convexRadius, m_convexRadius))
+        return;
+
+    m_convexRadius = convexRadius;
+    updateJoltShape();
+
+    emit convexRadiusChanged(m_convexRadius);
+    emit changed();
+}
+
 void BoxShape::createJoltShape()
 {
-    m_shape = new JPH::BoxShape(PhysicsUtils::toJoltType(m_extents * 0.5f), 0.0f);
+    m_shape = new JPH::BoxShape(PhysicsUtils::toJoltType(m_extents * 0.5f), m_convexRadius);
 }

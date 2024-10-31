@@ -30,7 +30,6 @@ public:
     struct Contact
     {
         int bodyID2;
-        int subShapeID2;
         QVector3D contactPosition;
         QVector3D contactNormal;
     };
