@@ -26,6 +26,8 @@ public:
     QVector3D offsetCenterOfMass() const;
     void setOffsetCenterOfMass(const QVector3D &offsetCenterOfMass);
 
+    virtual JPH::Ref<JPH::Shape> getJoltShape();
+
 signals:
     void densityChanged(float density);
     void offsetCenterOfMassChanged(const QVector3D &offsetCenterOfMass);
@@ -33,8 +35,6 @@ signals:
 
 protected:
     virtual void createJoltShape() = 0;
-    virtual JPH::Ref<JPH::Shape> getJoltShape();
-
     void updateJoltShape();
 
     JPH::Ref<JPH::Shape> m_shape = nullptr;
@@ -46,11 +46,6 @@ private slots:
 private:
     float m_density = 1000.0f;
     QVector3D m_offsetCenterOfMass;
-
-    friend class Body;
-    friend class StaticCompoundShape;
-    friend class CharacterVirtual;
-    friend class Character;
 };
 
 #endif // ABSTRACTSHAPE_P_H

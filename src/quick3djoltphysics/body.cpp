@@ -35,7 +35,7 @@ void Body::setIsSensor(bool isSensor)
     if (m_body)
         m_body->SetIsSensor(isSensor);
 
-    isSensorChanged(isSensor);
+    emit isSensorChanged(isSensor);
 }
 
 CollisionGroup *Body::collisionGroup() const
