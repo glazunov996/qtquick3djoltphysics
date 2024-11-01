@@ -21,6 +21,11 @@ Item {
     property bool xInvert: false
     property bool yInvert: true
 
+    readonly property int pick: 0
+    readonly property int collidePoint: 1
+
+    property int probeMode: pick
+
     property real dragRayLength: 40.0
 
     implicitWidth: parent.width
@@ -209,6 +214,19 @@ Item {
         }
     }
 
+    Component {
+        id: boxComponent
+        Model {
+            source: "#Cube"
+            materials: DefaultMaterial {
+                diffuseColor: "blue"
+            }
+            scale: Qt.vector3d(0.05, 0.05, 0.05)
+            opacity: 0.2
+            visible: false
+        }
+    }
+
     QtObject {
         id: status
 
@@ -226,6 +244,8 @@ Item {
         property Node marker: null
         property Node dragConstraint: null
         property Node dragAnchor: null
+
+        property var boxByBody: ({})
 
         property var hit: undefined
 
@@ -250,15 +270,54 @@ Item {
         }
 
         function castProbe() {
-            var start = camera.position;
-            var direction = camera.forward.times(dragRayLength);
+            let start = camera.position;
+            let direction = camera.forward.times(dragRayLength);
 
-            hit = physicsSystem.castRay(start, direction);
+            hit = {
+                position: start + direction,
+                fraction: 1.0
+            }
 
-            if (hit.body)
-                marker.position = hit.position;
-            else
-                marker.position = camera.position.plus(camera.forward.times(0.1));
+            switch (probeMode) {
+            case pick:
+                hit = physicsSystem.castRay(start, direction);
+                if (hit.body)
+                    marker.position = hit.position;
+                else
+                    marker.position = camera.position.plus(camera.forward.times(0.1));
+                break;
+            case collidePoint:
+                let point = start.plus(direction.times(0.2));
+                let hits = physicsSystem.collidePoint(point);
+                for (let key in boxByBody) {
+                    let box = boxByBody[key];
+                    box.visible = false;
+                }
+                for (var i = 0; i < hits.length; ++i) {
+                    var body = hits[i];
+                    if (body.motionType !== Body.Dynamic)
+                        continue;
+
+                    var box = boxByBody[body];
+                    if (box === undefined) {
+                        box = boxComponent.createObject(physicsSystem.scene)
+                        boxByBody[body] = box;
+                    }
+
+                    box.position = Qt.binding(function() { return body.position; });
+                    box.eulerRotation = Qt.binding(function() { return body.eulerRotation; });
+
+                    for (var j = 0; j < body.children.length; ++j) {
+                        const child = body.children[j];
+                        if (child.source !== undefined) {
+                            box.scale = child.scale.plus(Qt.vector3d(0.002, 0.002, 0.002));
+                            box.visible = true;
+                        }
+                    }
+                }
+                marker.position = point;
+                break
+            }
         }
 
         function updateDebug(frameDelta) {

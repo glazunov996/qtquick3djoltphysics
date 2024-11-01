@@ -56,9 +56,9 @@ Item {
     }
 
     function prePhysicsUpdate(deltaTime) {
-        time += deltaTime / 1000
+        time += deltaTime
         var pos = Qt.vector3d(-20 * Math.cos(time), 10, 0)
-        kinematicBody.moveKinematic(pos, Qt.quaternion(1, 0, 0, 0), deltaTime / 1000)
+        kinematicBody.moveKinematic(pos, Qt.quaternion(1, 0, 0, 0), deltaTime)
 
         var center = Qt.vector3d(0, 10, 0)
         var centrifugalForce = 10.0
@@ -153,11 +153,12 @@ Item {
         }
 
         // A static sensor that attracts dynamic bodies that enter its area
-        Sensor {
+        Body {
             id: sensor1
             shape: SphereShape {
                 diameter: 20
             }
+            isSensor: true
             objectLayer: sensor
             motionType: Body.Static
             position: Qt.vector3d(0, 10, 0)
@@ -173,11 +174,12 @@ Item {
         }
 
         // A static sensor that only detects active bodies
-        Sensor {
+        Body {
             id: sensor2
             shape: BoxShape {
                 extents: Qt.vector3d(10, 10, 10)
             }
+            isSensor: true
             objectLayer: sensor
             motionType: Body.Static
             position: Qt.vector3d(-10, 5.1, 0)

@@ -242,10 +242,12 @@ Item {
             shape: CapsuleShape {
                 height: characterHeightStanding
                 diameter: characterRadiusStanding * 2
+                position.y: characterHeightStanding / 2 + characterRadiusStanding
             }
             innerBodyShape: CapsuleShape {
                 height: characterHeightStanding * 0.9
                 diameter: characterRadiusStanding * 2 * 0.9
+                position.y: (characterHeightStanding / 2 + characterRadiusStanding) * 0.9
             }
             characterContactListener: ExampleCharacterContactListener {
                 id: characterContactListener

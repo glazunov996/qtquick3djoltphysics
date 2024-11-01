@@ -131,7 +131,7 @@ Item {
     }
 
     function prePhysicsUpdate(frameDelta) {
-        rampBlocksTimeLeft -= frameDelta / 1000;
+        rampBlocksTimeLeft -= frameDelta;
         if (rampBlocksTimeLeft < 0.0) {
             for (var i = 0; i < 4; ++i) {
                 var rampBlock = rampBlocks[i];
@@ -204,6 +204,7 @@ Item {
             shape: CapsuleShape {
                 height: characterHeightStanding
                 diameter: characterRadiusStanding * 2
+                position.y: characterHeightStanding / 2 + characterRadiusStanding
             }
             layer: moving
             friction: 0.5
