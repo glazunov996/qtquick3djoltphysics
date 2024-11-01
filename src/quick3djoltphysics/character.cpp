@@ -181,11 +181,7 @@ bool Character::setShape(AbstractShape *shape, float maxPenetrationDepth)
 
     AbstractPhysicsBody::setShape(shape);
 
-    const auto &joltShape = shape->getJoltShape();
-    if (joltShape == nullptr)
-        return false;
-
-    return m_character->SetShape(joltShape, maxPenetrationDepth);
+    return m_character->SetShape(shape->getJoltShape(), maxPenetrationDepth);
 }
 
 void Character::updateJoltObject()
@@ -194,11 +190,7 @@ void Character::updateJoltObject()
         return;
 
     if (m_character == nullptr) {
-        const auto &shape = m_shape->getJoltShape();
-        if (shape == nullptr)
-            return;
-
-        m_characterSettings.mShape = shape;
+        m_characterSettings.mShape = m_shape->getJoltShape();
         m_characterSettings.mSupportingVolume = JPH::Plane(PhysicsUtils::toJoltType(m_supportingVolume.toVector3D()), m_supportingVolume.w());
         m_characterSettings.mMaxSlopeAngle = qDegreesToRadians(m_maxSlopeAngle);
 

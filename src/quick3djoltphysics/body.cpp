@@ -558,9 +558,6 @@ void Body::updateJoltObject()
         return;
 
     const auto &shape = m_shape->getJoltShape();
-    if (shape == nullptr)
-        return;
-
     auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
     const auto activationMode = getActivationForMotionType();
 

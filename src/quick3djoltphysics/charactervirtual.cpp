@@ -532,11 +532,7 @@ bool CharacterVirtual::setShape(AbstractShape *shape, AbstractShape *innerShape,
 
     AbstractPhysicsBody::setShape(shape);
 
-    const auto &joltShape = shape->getJoltShape();
-    if (joltShape == nullptr)
-        return false;
-
-    if (!m_character->SetShape(joltShape,
+    if (!m_character->SetShape(shape->getJoltShape(),
                                maxPenetrationDepth,
                                m_jolt->GetDefaultBroadPhaseLayerFilter(broadPhaseLayerFilter),
                                m_jolt->GetDefaultLayerFilter(objectLayerFilter),
@@ -560,11 +556,7 @@ void CharacterVirtual::updateJoltObject()
         return;
 
     if (m_character == nullptr) {
-        const auto &shape = m_shape->getJoltShape();
-        if (shape == nullptr)
-            return;
-
-        m_characterSettings.mShape = shape;
+        m_characterSettings.mShape = m_shape->getJoltShape();
         m_characterSettings.mSupportingVolume = JPH::Plane(PhysicsUtils::toJoltType(m_supportingVolume.toVector3D()), m_supportingVolume.w());
         m_characterSettings.mBackFaceMode = static_cast<JPH::EBackFaceMode>(m_backFaceMode);
         m_characterSettings.mMaxSlopeAngle = qDegreesToRadians(m_maxSlopeAngle);
