@@ -7,27 +7,21 @@
 #include <Jolt/Physics/Collision/ContactListener.h>
 #include <Jolt/Physics/Collision/CollideShape.h>
 
-static inline CollideShapeResult toCollideShapeResultType(const JPH::CollideShapeResult &inCollisionResult)
+static inline AbstractContactListener::CollideShapeResult toCollideShapeResultType(const JPH::CollideShapeResult &inCollisionResult)
 {
-    CollideShapeResult collisionResult;
+    AbstractContactListener::CollideShapeResult collisionResult;
     collisionResult.contactPointOn1 = PhysicsUtils::toQtType(inCollisionResult.mContactPointOn1);
     collisionResult.contactPointOn2 = PhysicsUtils::toQtType(inCollisionResult.mContactPointOn2);
     collisionResult.penetrationAxis = PhysicsUtils::toQtType(inCollisionResult.mPenetrationAxis);
     collisionResult.penetrationDepth = inCollisionResult.mPenetrationDepth;
     collisionResult.bodyID2 = inCollisionResult.mBodyID2.GetIndexAndSequenceNumber();
 
-    for (const auto &face : inCollisionResult.mShape1Face)
-        collisionResult.shape1Face.push_back(PhysicsUtils::toQtType(face));
-
-    for (const auto &face : inCollisionResult.mShape2Face)
-        collisionResult.shape2Face.push_back(PhysicsUtils::toQtType(face));
-
     return collisionResult;
 }
 
-static inline ContactManifold toContactManifoldType(const JPH::ContactManifold &inManifold)
+static inline AbstractContactListener::ContactManifold toContactManifoldType(const JPH::ContactManifold &inManifold)
 {
-    ContactManifold manifold;
+    AbstractContactListener::ContactManifold manifold;
     manifold.baseOffset = PhysicsUtils::toQtType(inManifold.mBaseOffset);
     manifold.worldSpaceNormal = PhysicsUtils::toQtType(inManifold.mWorldSpaceNormal);
     manifold.penetrationDepth = inManifold.mPenetrationDepth;
@@ -41,9 +35,9 @@ static inline ContactManifold toContactManifoldType(const JPH::ContactManifold &
     return manifold;
 }
 
-static inline ContactSettings toContactSettingsType(const JPH::ContactSettings &ioSettings)
+static inline AbstractContactListener::ContactSettings toContactSettingsType(const JPH::ContactSettings &ioSettings)
 {
-    ContactSettings settings;
+    AbstractContactListener::ContactSettings settings;
     settings.combinedFriction = ioSettings.mCombinedFriction;
     settings.combinedRestitution = ioSettings.mCombinedRestitution;
     settings.invMassScale1 = ioSettings.mInvMassScale1;
@@ -56,7 +50,7 @@ static inline ContactSettings toContactSettingsType(const JPH::ContactSettings &
     return settings;
 }
 
-static inline const JPH::ContactSettings toJoltContactSettingsType(const ContactSettings &settings)
+static inline JPH::ContactSettings toJoltContactSettingsType(const AbstractContactListener::ContactSettings &settings)
 {
     JPH::ContactSettings ioSettings;
     ioSettings.mCombinedFriction = settings.combinedFriction;

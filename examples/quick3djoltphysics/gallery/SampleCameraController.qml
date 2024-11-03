@@ -21,10 +21,11 @@ Item {
     property bool xInvert: false
     property bool yInvert: true
 
-    readonly property int pick: 0
-    readonly property int collidePoint: 1
+    readonly property int probePick: 0
+    readonly property int probeCollidePoint: 1
+    readonly property int probeCollideShape: 2
 
-    property int probeMode: pick
+    property int probeMode: probePick
 
     property real dragRayLength: 40.0
 
@@ -223,8 +224,69 @@ Item {
             }
             scale: Qt.vector3d(0.05, 0.05, 0.05)
             opacity: 0.2
-            visible: false
         }
+    }
+
+    Component {
+        id: boxCollideShapeComponent
+        Node {
+            property alias shape: shape
+            property alias model: model
+            BoxShape {
+                id: shape
+                extents: Qt.vector3d(0.2, 0.4, 0.6)
+            }
+            Model {
+                id: model
+                property alias baseColor: material.baseColor
+                source: "#Cube"
+                materials: PrincipledMaterial {
+                    id: material
+                    baseColorMap: Texture {
+                        source: "qrc:/images/checkers2.png"
+                        scaleU: 2
+                        scaleV: 2
+                    }
+                    baseColor: "gray"
+                    metalness: 0.5
+                    roughness: 0.1
+                }
+                scale: Qt.vector3d(0.002, 0.004, 0.006)
+            }
+        }
+    }
+
+    Component {
+        id: sphereCollideShapeComponent
+        Node {
+            property alias shape: shape
+            property alias model: model
+            SphereShape {
+                id: shape
+                diameter: 0.4
+            }
+            Model {
+                id: model
+                property alias baseColor: material.baseColor
+                source: "#Sphere"
+                materials: PrincipledMaterial {
+                    id: material
+                    baseColorMap: Texture {
+                        source: "qrc:/images/checkers2.png"
+                        scaleU: 2
+                        scaleV: 2
+                    }
+                    baseColor: "gray"
+                    metalness: 0.5
+                    roughness: 0.1
+                }
+                scale: Qt.vector3d(0.004, 0.004, 0.004)
+            }
+        }
+    }
+
+    CollideShapeSettings {
+        id: settings
     }
 
     QtObject {
@@ -245,7 +307,7 @@ Item {
         property Node dragConstraint: null
         property Node dragAnchor: null
 
-        property var boxByBody: ({})
+        property var collideShape: null
 
         property var hit: undefined
 
@@ -272,6 +334,9 @@ Item {
         function castProbe() {
             let start = camera.position;
             let direction = camera.forward.times(dragRayLength);
+            let baseOffset = start.plus(direction.times(0.5));
+
+            let point;
 
             hit = {
                 position: start + direction,
@@ -279,44 +344,43 @@ Item {
             }
 
             switch (probeMode) {
-            case pick:
+            case probePick:
                 hit = physicsSystem.castRay(start, direction);
                 if (hit.body)
                     marker.position = hit.position;
                 else
                     marker.position = camera.position.plus(camera.forward.times(0.1));
                 break;
-            case collidePoint:
-                let point = start.plus(direction.times(0.2));
+            case probeCollidePoint:
+                point = start.plus(direction.times(0.2));
                 let hits = physicsSystem.collidePoint(point);
-                for (let key in boxByBody) {
-                    let box = boxByBody[key];
-                    box.visible = false;
-                }
                 for (var i = 0; i < hits.length; ++i) {
                     var body = hits[i];
                     if (body.motionType !== Body.Dynamic)
                         continue;
-
-                    var box = boxByBody[body];
-                    if (box === undefined) {
-                        box = boxComponent.createObject(physicsSystem.scene)
-                        boxByBody[body] = box;
-                    }
-
-                    box.position = Qt.binding(function() { return body.position; });
-                    box.eulerRotation = Qt.binding(function() { return body.eulerRotation; });
-
-                    for (var j = 0; j < body.children.length; ++j) {
-                        const child = body.children[j];
-                        if (child.source !== undefined) {
-                            box.scale = child.scale.plus(Qt.vector3d(0.002, 0.002, 0.002));
-                            box.visible = true;
-                        }
-                    }
                 }
                 marker.position = point;
-                break
+                break;
+            case probeCollideShape:
+                if (collideShape === null)
+                    collideShape = sphereCollideShapeComponent.createObject(physicsSystem.scene)
+
+                point = start.plus(camera.forward.times(5.0));
+                let rotation = Quaternion.fromEulerAngles(18, 38, 0);
+
+                let shapeTransform = Qt.matrix4x4();
+                shapeTransform.translate(point);
+                shapeTransform.rotate(rotation);
+
+                let result = physicsSystem.collideShape(collideShape.shape, shapeTransform, settings, baseOffset);
+                if (result.length)
+                    collideShape.model.baseColor = "green";
+                else
+                    collideShape.model.baseColor = "gray";
+
+                collideShape.position = point;
+                collideShape.rotation = rotation;
+                break;
             }
         }
 

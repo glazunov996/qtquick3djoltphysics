@@ -26,6 +26,8 @@ public:
     QVector3D offsetCenterOfMass() const;
     void setOffsetCenterOfMass(const QVector3D &offsetCenterOfMass);
 
+    Q_INVOKABLE QVector3D getCenterOfMass();
+
     virtual JPH::Ref<JPH::Shape> getJoltShape();
 
 signals:

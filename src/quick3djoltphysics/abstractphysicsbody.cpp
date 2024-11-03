@@ -46,7 +46,12 @@ void AbstractPhysicsBody::setShape(AbstractShape *shape)
     });
 
     QObject::connect(m_shape, &QObject::destroyed, this,
-                     [this] { m_shape = nullptr; });
+                     [this]
+    {
+        if (m_shape->parentItem() == nullptr)
+            QQuick3DObjectPrivate::get(m_shape)->derefSceneManager();
+        m_shape = nullptr;
+    });
 
     m_shapeDirty = true;
     updateJoltObject();

@@ -4,7 +4,9 @@
 #include "physicslayers.h"
 #include "physicssettings_p.h"
 #include "raycastresult_p.h"
+#include "collideshaperesult_p.h"
 #include "contactlistener.h"
+#include "qtquick3djoltphysicsglobal_p.h"
 
 #include <QtQuick3DJoltPhysics/qtquick3djoltphysicsglobal.h>
 
@@ -15,6 +17,9 @@
 #include <QAbstractAnimation>
 
 #include <QtQuick3D/private/qquick3dviewport_p.h>
+
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/PhysicsSettings.h>
 
 namespace JPH {
 class PhysicsSystem;
@@ -27,6 +32,31 @@ Q_DECLARE_LOGGING_CATEGORY(lcQuick3dJoltPhysics)
 
 class AbstractPhysicsNode;
 class PhysicsSystemAnimation;
+
+class Q_QUICK3DJOLTPHYSICS_EXPORT CollideShapeSettings : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(float maxSeparationDistance MEMBER maxSeparationDistance)
+    Q_PROPERTY(Quick3dJoltPhysics::BackFaceMode backFaceMode MEMBER backFaceMode)
+    Q_PROPERTY(Quick3dJoltPhysics::ActiveEdgeMode activeEdgeMode MEMBER activeEdgeMode)
+    Q_PROPERTY(Quick3dJoltPhysics::CollectFacesMode collectFacesMode MEMBER collectFacesMode)
+    Q_PROPERTY(float collisionTolerance MEMBER collisionTolerance)
+    Q_PROPERTY(float penetrationTolerance MEMBER penetrationTolerance)
+    Q_PROPERTY(QVector3D activeEdgeMovementDirection MEMBER activeEdgeMovementDirection)
+    QML_NAMED_ELEMENT(CollideShapeSettings)
+public:
+    explicit CollideShapeSettings(QObject *parent = nullptr) : QObject(parent)
+    {}
+    ~CollideShapeSettings() override = default;
+
+    float maxSeparationDistance = 0.0f;
+    Quick3dJoltPhysics::BackFaceMode backFaceMode = Quick3dJoltPhysics::BackFaceMode::IgnoreBackFaces;
+    Quick3dJoltPhysics::ActiveEdgeMode activeEdgeMode = Quick3dJoltPhysics::ActiveEdgeMode::CollideOnlyWithActive;
+    Quick3dJoltPhysics::CollectFacesMode collectFacesMode = Quick3dJoltPhysics::CollectFacesMode::NoFaces;
+    float collisionTolerance = JPH::cDefaultCollisionTolerance;
+    float penetrationTolerance = JPH::cDefaultPenetrationTolerance;
+    QVector3D activeEdgeMovementDirection;
+};
 
 class Q_QUICK3DJOLTPHYSICS_EXPORT PhysicsSystem : public QObject, public QQmlParserStatus
 {
@@ -95,6 +125,9 @@ public:
     Q_INVOKABLE RayCastResult castRay(const QVector3D &origin, const QVector3D &direction) const;
     Q_INVOKABLE RayCastResult castRay(const QVector3D &origin, const QVector3D &direction, unsigned int broadPhaseLayerFilter, unsigned int objectLayerFilter) const;
     Q_INVOKABLE QVector<Body *> collidePoint(const QVector3D &point) const;
+    Q_INVOKABLE QVector<Body *> collidePoint(const QVector3D &point, unsigned int broadPhaseLayerFilter, unsigned int objectLayerFilter) const;
+    Q_INVOKABLE QVector<CollideShapeResult> collideShape(AbstractShape *shape, const QMatrix4x4 &transform, CollideShapeSettings *settings, const QVector3D &baseOffset) const;
+    Q_INVOKABLE QVector<CollideShapeResult> collideShape(AbstractShape *shape, const QMatrix4x4 &transform, CollideShapeSettings *settings, const QVector3D &baseOffset, unsigned int broadPhaseLayerFilter, unsigned int objectLayerFilter) const;
 
 signals:
     void settingsChanged(PhysicsSettings *settings);

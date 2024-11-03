@@ -13,39 +13,6 @@ namespace JPH {
 class ContactListener;
 }
 
-struct Q_QUICK3DJOLTPHYSICS_EXPORT CollideShapeResult
-{
-    QVector3D contactPointOn1;
-    QVector3D contactPointOn2;
-    QVector3D penetrationAxis;
-    float penetrationDepth;
-    int bodyID2;
-    QList<QVector3D> shape1Face;
-    QList<QVector3D> shape2Face;
-};
-
-struct Q_QUICK3DJOLTPHYSICS_EXPORT ContactManifold
-{
-    QVector3D baseOffset;
-    QVector3D worldSpaceNormal;
-    float penetrationDepth;
-    QList<QVector3D> relativeContactPointsOn1;
-    QList<QVector3D> relativeContactPointsOn2;
-};
-
-struct Q_QUICK3DJOLTPHYSICS_EXPORT ContactSettings
-{
-    float combinedFriction;
-    float combinedRestitution;
-    float invMassScale1;
-    float invInertiaScale1;
-    float invMassScale2;
-    float invInertiaScale2;
-    bool isSensor;
-    QVector3D relativeLinearSurfaceVelocity;
-    QVector3D relativeAngularSurfaceVelocity;
-};
-
 class Q_QUICK3DJOLTPHYSICS_EXPORT AbstractContactListener : public QObject
 {
     Q_OBJECT
@@ -62,6 +29,37 @@ public:
         RejectAllContactsForThisBodyPair
     };
     Q_ENUM(ValidateResult)
+
+    struct CollideShapeResult
+    {
+        QVector3D contactPointOn1;
+        QVector3D contactPointOn2;
+        QVector3D penetrationAxis;
+        float penetrationDepth;
+        int bodyID2;
+    };
+
+    struct ContactManifold
+    {
+        QVector3D baseOffset;
+        QVector3D worldSpaceNormal;
+        float penetrationDepth;
+        QList<QVector3D> relativeContactPointsOn1;
+        QList<QVector3D> relativeContactPointsOn2;
+    };
+
+    struct ContactSettings
+    {
+        float combinedFriction;
+        float combinedRestitution;
+        float invMassScale1;
+        float invInertiaScale1;
+        float invMassScale2;
+        float invInertiaScale2;
+        bool isSensor;
+        QVector3D relativeLinearSurfaceVelocity;
+        QVector3D relativeAngularSurfaceVelocity;
+    };
 
     struct BodyContact
     {
@@ -98,7 +96,5 @@ private:
     QList<BodyContact> m_enteredBodyContacts;
     QList<BodyContact> m_exitedBodyContacts;
 };
-
-Q_DECLARE_METATYPE(ContactManifold)
 
 #endif // CONTACTLISTENER_P_H

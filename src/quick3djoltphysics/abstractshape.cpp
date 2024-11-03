@@ -51,6 +51,12 @@ void AbstractShape::setOffsetCenterOfMass(const QVector3D &offsetCenterOfMass)
     emit changed();
 }
 
+QVector3D AbstractShape::getCenterOfMass()
+{
+    const auto &shape = getJoltShape();
+    return PhysicsUtils::toQtType(shape->GetCenterOfMass());
+}
+
 JPH::Ref<JPH::Shape> AbstractShape::getJoltShape()
 {
     m_shapeInitialized = true;

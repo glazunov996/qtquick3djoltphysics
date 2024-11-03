@@ -22,6 +22,7 @@ qt_internal_add_qml_module(Quick3DJoltPhysics
         charactercontactlistener.h charactercontactlistener.cpp
         character_p.h character.cpp
         charactervirtual_p.h charactervirtual.cpp
+        collideshaperesult_p.h collideshaperesult.cpp
         collisiongroup_p.h collisiongroup.cpp
         contactlistener.h contactlistener.cpp
         convexhullshape_p.h convexhullshape.cpp

@@ -16,6 +16,8 @@
 #include <Jolt/Physics/Collision/CollidePointResult.h>
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Body/BodyLock.h>
+#include <Jolt/Physics/Collision/CollideShape.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
 
 Q_LOGGING_CATEGORY(lcQuick3dJoltPhysics, "qt.quick3d.joltphysics")
 
@@ -422,25 +424,26 @@ void PhysicsSystem::setScene(QQuick3DNode *scene)
     emit sceneChanged(m_scene);
 }
 
-static RayCastResult getRayCastHitResult(JPH::PhysicsSystem *jolt, const JPH::RRayCast &ray, const JPH::RayCastResult &hit)
+static RayCastResult getRayCastHitResult(JPH::PhysicsSystem *jolt, const JPH::RRayCast &ray, const JPH::RayCastResult &hit, bool hadHit)
 {
     Body *body = nullptr;
-    JPH::BodyLockWrite lock(jolt->GetBodyLockInterface(), hit.mBodyID);
-    if (lock.Succeeded()) {
-        JPH::Body &joltBody = lock.GetBody();
-        body = reinterpret_cast<Body *>(joltBody.GetUserData());
+    JPH::Vec3 position = ray.GetPointOnRay(hit.mFraction);
+    JPH::Vec3 normal;
 
-        const auto &position = ray.GetPointOnRay(hit.mFraction);
-        const auto &normal = joltBody.GetWorldSpaceSurfaceNormal(hit.mSubShapeID2, position);
-
-        return RayCastResult(
-            body,
-            PhysicsUtils::toQtType(position),
-            PhysicsUtils::toQtType(normal),
-            hit.mFraction);
+    if (hadHit) {
+        JPH::BodyLockWrite lock(jolt->GetBodyLockInterface(), hit.mBodyID);
+        if (lock.Succeeded()) {
+            JPH::Body &joltBody = lock.GetBody();
+            body = reinterpret_cast<Body *>(joltBody.GetUserData());
+            normal = joltBody.GetWorldSpaceSurfaceNormal(hit.mSubShapeID2, position);
+        }
     }
 
-    return RayCastResult();
+    return RayCastResult(
+        body,
+        PhysicsUtils::toQtType(position),
+        PhysicsUtils::toQtType(normal),
+        hit.mFraction);
 }
 
 RayCastResult PhysicsSystem::castRay(const QVector3D &origin, const QVector3D &direction) const
@@ -453,10 +456,7 @@ RayCastResult PhysicsSystem::castRay(const QVector3D &origin, const QVector3D &d
     JPH::RayCastResult hit;
     bool hadHit = m_jolt->GetNarrowPhaseQuery().CastRay(ray, hit);
 
-    if (hadHit)
-        return getRayCastHitResult(m_jolt, ray, hit);
-
-    return RayCastResult();
+    return getRayCastHitResult(m_jolt, ray, hit, hadHit);
 }
 
 RayCastResult PhysicsSystem::castRay(const QVector3D &origin, const QVector3D &direction, unsigned int broadPhaseLayerFilter, unsigned int objectLayerFilter) const
@@ -472,10 +472,23 @@ RayCastResult PhysicsSystem::castRay(const QVector3D &origin, const QVector3D &d
         JPH::SpecifiedBroadPhaseLayerFilter(JPH::BroadPhaseLayer(broadPhaseLayerFilter)),
         JPH::SpecifiedObjectLayerFilter(JPH::ObjectLayer(objectLayerFilter)));
 
-    if (hadHit)
-        return getRayCastHitResult(m_jolt, ray, hit);
+    return getRayCastHitResult(m_jolt, ray, hit, hadHit);
+}
 
-    return RayCastResult();
+static QVector<Body *> getCollidePointResult(JPH::PhysicsSystem *jolt, const JPH::AllHitCollisionCollector<JPH::CollidePointCollector> &collector)
+{
+    QVector<Body *> hits;
+
+    for (const auto &hit : collector.mHits) {
+        JPH::BodyLockRead lock(jolt->GetBodyLockInterface(), hit.mBodyID);
+        if (lock.Succeeded()) {
+            const JPH::Body &joltBody = lock.GetBody();
+            Body *body = reinterpret_cast<Body *>(joltBody.GetUserData());
+            hits.push_back(body);
+        }
+    }
+
+    return hits;
 }
 
 QVector<Body *> PhysicsSystem::collidePoint(const QVector3D &point) const
@@ -483,21 +496,71 @@ QVector<Body *> PhysicsSystem::collidePoint(const QVector3D &point) const
     JPH::AllHitCollisionCollector<JPH::CollidePointCollector> collector;
     m_jolt->GetNarrowPhaseQuery().CollidePoint(PhysicsUtils::toJoltType(point), collector);
 
-    QVector<Body *> hitBodies;
+    return getCollidePointResult(m_jolt, collector);
+}
 
-    bool hadHit = !collector.mHits.empty();
-    if (hadHit) {
-        for (const auto &hit : collector.mHits) {
-            JPH::BodyLockRead lock(m_jolt->GetBodyLockInterface(), hit.mBodyID);
-            if (lock.Succeeded()) {
-                const JPH::Body &joltBody = lock.GetBody();
-                Body *body = reinterpret_cast<Body *>(joltBody.GetUserData());
-                hitBodies.push_back(body);
-            }
+QVector<Body *> PhysicsSystem::collidePoint(const QVector3D &point, unsigned int broadPhaseLayerFilter, unsigned int objectLayerFilter) const
+{
+    JPH::AllHitCollisionCollector<JPH::CollidePointCollector> collector;
+    m_jolt->GetNarrowPhaseQuery().CollidePoint(PhysicsUtils::toJoltType(point), collector,
+                                               JPH::SpecifiedBroadPhaseLayerFilter(JPH::BroadPhaseLayer(broadPhaseLayerFilter)),
+                                               JPH::SpecifiedObjectLayerFilter(JPH::ObjectLayer(objectLayerFilter)));
+
+    return getCollidePointResult(m_jolt, collector);
+}
+
+static QVector<CollideShapeResult> getCollideShapeResult(JPH::PhysicsSystem *jolt, const JPH::AllHitCollisionCollector<JPH::CollideShapeCollector> &collector)
+{
+    QVector<CollideShapeResult> hits;
+
+    for (const auto &hit : collector.mHits) {
+        JPH::BodyLockRead lock(jolt->GetBodyLockInterface(), hit.mBodyID2);
+        if (lock.Succeeded()) {
+            const JPH::Body &joltBody = lock.GetBody();
+            Body *body = reinterpret_cast<Body *>(joltBody.GetUserData());
+            hits.push_back(CollideShapeResult(PhysicsUtils::toQtType(hit.mContactPointOn1),
+                                              PhysicsUtils::toQtType(hit.mContactPointOn2),
+                                              PhysicsUtils::toQtType(hit.mPenetrationAxis),
+                                              hit.mPenetrationDepth,
+                                              body)
+            );
         }
     }
 
-    return hitBodies;
+    return hits;
+}
+
+QVector<CollideShapeResult> PhysicsSystem::collideShape(AbstractShape *shape, const QMatrix4x4 &transform, CollideShapeSettings *settings, const QVector3D &baseOffset) const
+{
+    JPH::AllHitCollisionCollector<JPH::CollideShapeCollector> collector;
+
+    JPH::CollideShapeSettings inSettings;
+    inSettings.mMaxSeparationDistance = settings->maxSeparationDistance;
+    inSettings.mBackFaceMode = static_cast<JPH::EBackFaceMode>(settings->backFaceMode);
+    inSettings.mActiveEdgeMode = static_cast<JPH::EActiveEdgeMode>(settings->activeEdgeMode);
+    inSettings.mCollectFacesMode = static_cast<JPH::ECollectFacesMode>(settings->collectFacesMode);
+    inSettings.mCollisionTolerance = settings->collisionTolerance;
+    inSettings.mPenetrationTolerance = settings->penetrationTolerance;
+    inSettings.mActiveEdgeMovementDirection = PhysicsUtils::toJoltType(settings->activeEdgeMovementDirection);
+
+    m_jolt->GetNarrowPhaseQuery().CollideShape(shape->getJoltShape(), JPH::Vec3::sReplicate(1.0f), PhysicsUtils::toJoltType(transform), inSettings, PhysicsUtils::toJoltType(baseOffset), collector);
+
+    return getCollideShapeResult(m_jolt, collector);
+}
+
+QVector<CollideShapeResult> PhysicsSystem::collideShape(AbstractShape *shape, const QMatrix4x4 &transform, CollideShapeSettings *settings, const QVector3D &baseOffset, unsigned int broadPhaseLayerFilter, unsigned int objectLayerFilter) const
+{
+    JPH::AllHitCollisionCollector<JPH::CollideShapeCollector> collector;
+
+    JPH::CollideShapeSettings inSettings;
+    inSettings.mMaxSeparationDistance = settings->maxSeparationDistance;
+    inSettings.mBackFaceMode = static_cast<JPH::EBackFaceMode>(settings->backFaceMode);
+
+    m_jolt->GetNarrowPhaseQuery().CollideShape(shape->getJoltShape(), JPH::Vec3::sReplicate(1.0f), PhysicsUtils::toJoltType(transform), inSettings, PhysicsUtils::toJoltType(baseOffset), collector,
+                                               JPH::SpecifiedBroadPhaseLayerFilter(JPH::BroadPhaseLayer(broadPhaseLayerFilter)),
+                                               JPH::SpecifiedObjectLayerFilter(JPH::ObjectLayer(objectLayerFilter)));
+
+    return getCollideShapeResult(m_jolt, collector);
 }
 
 void PhysicsSystem::initPhysics()
