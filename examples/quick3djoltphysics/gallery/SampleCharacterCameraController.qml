@@ -46,8 +46,6 @@ Item {
 
     function mousePressed() {
         root.forceActiveFocus()
-        status.currentPos = _cursor.pos()
-        status.lastPos = _cursor.pos()
         status.useMouse = true
         AppSettings.showSettingsView = false;
     }
@@ -224,22 +222,24 @@ Item {
         property bool controlDown: false
         property bool useMouse: false
 
-        property point lastPos: Qt.point(0, 0)
-        property point currentPos: Qt.point(0, 0)
-
         property Node marker: null
         property Node dragConstraint: null
         property Node dragAnchor: null
 
         property var hit: undefined
 
+        onUseMouseChanged: {
+            if (useMouse)
+                _mouseHandler.grabMouse(rootWindow);
+            else
+                _mouseHandler.releaseMouse(rootWindow);
+        }
+
         function processInput(frameDelta) {
             if (useMouse) {
-                currentPos = _cursor.pos()
                 // Get the delta
                 var rotationVector = root.origin.eulerRotation;
-                var delta = Qt.vector2d(lastPos.x - currentPos.x,
-                                        lastPos.y - currentPos.y);
+                var delta = _mouseHandler.getMouseDelta();
                 // rotate x
                 var rotateX = delta.x * xSpeed * frameDelta
                 if (xInvert)
@@ -251,15 +251,7 @@ Item {
                 if (yInvert)
                     rotateY = -rotateY;
                 rotationVector.z += rotateY;
-
                 origin.setEulerRotation(rotationVector);
-                lastPos = currentPos;
-
-                if (status.currentPos.x <= 0 || status.currentPos.x >= root.implicitWidth - 1
-                        || status.currentPos.y <= 0 || status.currentPos.y >= root.implicitHeight - 1) {
-                    lastPos = Qt.point(root.implicitWidth / 2, root.implicitHeight / 2)
-                    _cursor.setPos(lastPos)
-                }
             }
         }
     }

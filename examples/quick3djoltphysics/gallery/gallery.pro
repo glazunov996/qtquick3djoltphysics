@@ -2,7 +2,7 @@ QT += quick quick3d quick3djoltphysics
 
 SOURCES += \
     main.cpp \
-    cursor.cpp \
+    mousehandler.cpp \
     examplecharactercontactlistener.cpp \
     examplecontactlistener.cpp \
     examplegeometry.cpp \
@@ -10,7 +10,7 @@ SOURCES += \
     examplesensorcontactlistener.cpp \
 
 HEADERS += \
-    cursor.h \
+    mousehandler.h \
     examplecharactercontactlistener.h \
     examplecontactlistener.h \
     examplegeometry.h \

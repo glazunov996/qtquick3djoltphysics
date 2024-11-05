@@ -6,7 +6,7 @@
 #include <QtQml>
 #include <QtQuick3D/qquick3d.h>
 
-#include "cursor.h"
+#include "mousehandler.h"
 
 int main(int argc, char *argv[])
 {
@@ -15,10 +15,10 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(QQuick3D::idealSurfaceFormat());
     qputenv("QT_QUICK_CONTROLS_STYLE", "Basic");
 
-    Cursor cursor;
+    MouseHandler mouseHandler;
 
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty("_cursor", &cursor);
+    engine.rootContext()->setContextProperty("_mouseHandler", &mouseHandler);
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
         &app, [url](QObject *obj, const QUrl &objUrl) {

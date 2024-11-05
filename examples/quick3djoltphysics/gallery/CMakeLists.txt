@@ -43,7 +43,7 @@ qt_add_qml_module(gallery
         examplecontactlistener.h examplecontactlistener.cpp
         examplesensorcontactlistener.h examplesensorcontactlistener.cpp
         examplecharactercontactlistener.h examplecharactercontactlistener.cpp
-        cursor.cpp cursor.h
+        mousehandler.h mousehandler.cpp
         RESOURCES
             images/arrow_icon.png
             images/icon_play.png

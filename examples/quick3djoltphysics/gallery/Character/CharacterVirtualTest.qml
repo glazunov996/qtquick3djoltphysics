@@ -261,7 +261,7 @@ Item {
             }
             maxSlopeAngle: 45
             maxStrength: 100
-            backFaceMode: CharacterVirtual.CollideWithBackFaces
+            backFaceMode: JoltPhysics.CollideWithBackFaces
             characterPadding: 0.02
             penetrationRecoverySpeed: 1.0
             predictiveContactDistance: 0.1
