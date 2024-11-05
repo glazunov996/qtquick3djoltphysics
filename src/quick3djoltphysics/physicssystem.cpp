@@ -433,7 +433,7 @@ static RayCastResult getRayCastHitResult(JPH::PhysicsSystem *jolt, const JPH::RR
     if (hadHit) {
         JPH::BodyLockWrite lock(jolt->GetBodyLockInterface(), hit.mBodyID);
         if (lock.Succeeded()) {
-            JPH::Body &joltBody = lock.GetBody();
+            const auto &joltBody = lock.GetBody();
             body = reinterpret_cast<Body *>(joltBody.GetUserData());
             normal = joltBody.GetWorldSpaceSurfaceNormal(hit.mSubShapeID2, position);
         }
@@ -482,7 +482,7 @@ static QVector<Body *> getCollidePointResult(JPH::PhysicsSystem *jolt, const JPH
     for (const auto &hit : collector.mHits) {
         JPH::BodyLockRead lock(jolt->GetBodyLockInterface(), hit.mBodyID);
         if (lock.Succeeded()) {
-            const JPH::Body &joltBody = lock.GetBody();
+            const auto &joltBody = lock.GetBody();
             Body *body = reinterpret_cast<Body *>(joltBody.GetUserData());
             hits.push_back(body);
         }
@@ -516,12 +516,14 @@ static QVector<CollideShapeResult> getCollideShapeResult(JPH::PhysicsSystem *jol
     for (const auto &hit : collector.mHits) {
         JPH::BodyLockRead lock(jolt->GetBodyLockInterface(), hit.mBodyID2);
         if (lock.Succeeded()) {
-            const JPH::Body &joltBody = lock.GetBody();
+            const auto &joltBody = lock.GetBody();
             Body *body = reinterpret_cast<Body *>(joltBody.GetUserData());
+            const auto &surfaceNormal = joltBody.GetWorldSpaceSurfaceNormal(hit.mSubShapeID2, hit.mContactPointOn2);
             hits.push_back(CollideShapeResult(PhysicsUtils::toQtType(hit.mContactPointOn1),
                                               PhysicsUtils::toQtType(hit.mContactPointOn2),
                                               PhysicsUtils::toQtType(hit.mPenetrationAxis),
                                               hit.mPenetrationDepth,
+                                              PhysicsUtils::toQtType(surfaceNormal),
                                               body)
             );
         }
@@ -545,6 +547,8 @@ QVector<CollideShapeResult> PhysicsSystem::collideShape(AbstractShape *shape, co
 
     m_jolt->GetNarrowPhaseQuery().CollideShape(shape->getJoltShape(), JPH::Vec3::sReplicate(1.0f), PhysicsUtils::toJoltType(transform), inSettings, PhysicsUtils::toJoltType(baseOffset), collector);
 
+    collector.Sort();
+
     return getCollideShapeResult(m_jolt, collector);
 }
 
@@ -559,6 +563,8 @@ QVector<CollideShapeResult> PhysicsSystem::collideShape(AbstractShape *shape, co
     m_jolt->GetNarrowPhaseQuery().CollideShape(shape->getJoltShape(), JPH::Vec3::sReplicate(1.0f), PhysicsUtils::toJoltType(transform), inSettings, PhysicsUtils::toJoltType(baseOffset), collector,
                                                JPH::SpecifiedBroadPhaseLayerFilter(JPH::BroadPhaseLayer(broadPhaseLayerFilter)),
                                                JPH::SpecifiedObjectLayerFilter(JPH::ObjectLayer(objectLayerFilter)));
+
+    collector.Sort();
 
     return getCollideShapeResult(m_jolt, collector);
 }

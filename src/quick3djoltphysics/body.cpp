@@ -85,9 +85,8 @@ void Body::setMotionType(MotionType motionType)
 
     m_motionType = motionType;
     if (m_body) {
-        auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
         const auto activationMode = getActivationForMotionType();
-        bodyInterface.SetMotionType(m_body->GetID(), static_cast<JPH::EMotionType>(m_motionType), activationMode);
+        m_bodyInterface->SetMotionType(m_body->GetID(), static_cast<JPH::EMotionType>(m_motionType), activationMode);
     }
 
     emit motionTypeChanged(motionType);
@@ -104,10 +103,8 @@ void Body::setMotionQuality(MotionQuality motionQuality)
         return;
 
     m_motionQuality = motionQuality;
-    if (m_body) {
-        auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
-        bodyInterface.SetMotionQuality(m_body->GetID(), static_cast<JPH::EMotionQuality>(m_motionQuality));
-    }
+    if (m_body)
+        m_bodyInterface->SetMotionQuality(m_body->GetID(), static_cast<JPH::EMotionQuality>(m_motionQuality));
 
     emit motionQualityChanged(motionQuality);
 }
@@ -141,10 +138,8 @@ void Body::setObjectLayer(int objectLayer)
         return;
 
     m_bodySettings.mObjectLayer = objectLayer;
-    if (m_body) {
-        auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
-        bodyInterface.SetObjectLayer(m_body->GetID(), m_bodySettings.mObjectLayer);
-    }
+    if (m_body)
+        m_bodyInterface->SetObjectLayer(m_body->GetID(), m_bodySettings.mObjectLayer);
 
     emit objectLayerChanged(objectLayer);
 }
@@ -161,12 +156,11 @@ void Body::setUsedInSimulation(bool usedInSimulation)
 
     m_usedInSimulation = usedInSimulation;
     if (m_body) {
-        auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
         if (m_usedInSimulation) {
             const auto activationMode = getActivationForMotionType();
-            bodyInterface.AddBody(m_body->GetID(), activationMode);
+            m_bodyInterface->AddBody(m_body->GetID(), activationMode);
         } else {
-            bodyInterface.RemoveBody(m_body->GetID());
+            m_bodyInterface->RemoveBody(m_body->GetID());
         }
     }
 
@@ -430,8 +424,7 @@ void Body::activate()
         return;
     }
 
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
-    bodyInterface.ActivateBody(m_body->GetID());
+    m_bodyInterface->ActivateBody(m_body->GetID());
 }
 
 void Body::deactivate()
@@ -441,8 +434,7 @@ void Body::deactivate()
         return;
     }
 
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
-    bodyInterface.DeactivateBody(m_body->GetID());
+    m_bodyInterface->DeactivateBody(m_body->GetID());
 }
 
 void Body::addForce(const QVector3D &force)
@@ -452,8 +444,7 @@ void Body::addForce(const QVector3D &force)
         return;
     }
 
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
-    bodyInterface.AddForce(m_body->GetID(), PhysicsUtils::toJoltType(force));
+    m_bodyInterface->AddForce(m_body->GetID(), PhysicsUtils::toJoltType(force));
 }
 
 void Body::addForce(const QVector3D &force, const QVector3D &position)
@@ -463,8 +454,7 @@ void Body::addForce(const QVector3D &force, const QVector3D &position)
         return;
     }
 
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
-    bodyInterface.AddForce(m_body->GetID(), PhysicsUtils::toJoltType(force), PhysicsUtils::toJoltType(position));
+    m_bodyInterface->AddForce(m_body->GetID(), PhysicsUtils::toJoltType(force), PhysicsUtils::toJoltType(position));
 }
 
 void Body::addTorque(const QVector3D &torque)
@@ -474,8 +464,7 @@ void Body::addTorque(const QVector3D &torque)
         return;
     }
 
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
-    bodyInterface.AddTorque(m_body->GetID(), PhysicsUtils::toJoltType(torque));
+    m_bodyInterface->AddTorque(m_body->GetID(), PhysicsUtils::toJoltType(torque));
 }
 
 void Body::resetForce()
@@ -515,8 +504,7 @@ void Body::addImpulse(const QVector3D &impulse)
         return;
     }
 
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
-    bodyInterface.AddImpulse(m_body->GetID(), PhysicsUtils::toJoltType(impulse));
+    m_bodyInterface->AddImpulse(m_body->GetID(), PhysicsUtils::toJoltType(impulse));
 }
 
 void Body::addImpulse(const QVector3D &impulse, const QVector3D &position)
@@ -526,8 +514,7 @@ void Body::addImpulse(const QVector3D &impulse, const QVector3D &position)
         return;
     }
 
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
-    bodyInterface.AddImpulse(m_body->GetID(), PhysicsUtils::toJoltType(impulse), PhysicsUtils::toJoltType(position));
+    m_bodyInterface->AddImpulse(m_body->GetID(), PhysicsUtils::toJoltType(impulse), PhysicsUtils::toJoltType(position));
 }
 
 void Body::addAngularImpulse(const QVector3D &angularImpulse)
@@ -537,8 +524,7 @@ void Body::addAngularImpulse(const QVector3D &angularImpulse)
         return;
     }
 
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
-    bodyInterface.AddAngularImpulse(m_body->GetID(), PhysicsUtils::toJoltType(angularImpulse));
+    m_bodyInterface->AddAngularImpulse(m_body->GetID(), PhysicsUtils::toJoltType(angularImpulse));
 }
 
 void Body::moveKinematic(const QVector3D &targetPosition, const QQuaternion &targetRotation, float deltaTime)
@@ -548,8 +534,7 @@ void Body::moveKinematic(const QVector3D &targetPosition, const QQuaternion &tar
         return;
     }
 
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
-    bodyInterface.MoveKinematic(m_body->GetID(), PhysicsUtils::toJoltType(targetPosition), PhysicsUtils::toJoltType(targetRotation), deltaTime);
+    m_bodyInterface->MoveKinematic(m_body->GetID(), PhysicsUtils::toJoltType(targetPosition), PhysicsUtils::toJoltType(targetRotation), deltaTime);
 }
 
 void Body::updateJoltObject()
@@ -558,12 +543,11 @@ void Body::updateJoltObject()
         return;
 
     const auto &shape = m_shape->getJoltShape();
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
     const auto activationMode = getActivationForMotionType();
 
     if (m_body) {
         if (m_shapeDirty)
-            bodyInterface.SetShape(m_body->GetID(), shape, true, activationMode);
+            m_bodyInterface->SetShape(m_body->GetID(), shape, true, activationMode);
     } else {
         m_bodySettings.SetShape(shape);
         m_bodySettings.mPosition = PhysicsUtils::toJoltType(scenePosition());
@@ -581,11 +565,11 @@ void Body::updateJoltObject()
 
         m_bodySettings.mIsSensor = isSensor();
 
-        m_body = bodyInterface.CreateBody(m_bodySettings);
+        m_body = m_bodyInterface->CreateBody(m_bodySettings);
         m_body->SetUserData(reinterpret_cast<JPH::uint64>(this));
 
         if (m_usedInSimulation)
-            bodyInterface.AddBody(m_body->GetID(), activationMode);
+            m_bodyInterface->AddBody(m_body->GetID(), activationMode);
 
         m_bodyID = static_cast<int>(m_body->GetID().GetIndexAndSequenceNumber());
         emit bodyIDChanged(m_bodyID);
@@ -599,10 +583,9 @@ void Body::updateJoltObject()
 void Body::cleanup()
 {
     if (m_body) {
-        auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
         if (m_usedInSimulation)
-            bodyInterface.RemoveBody(m_body->GetID());
-        bodyInterface.DestroyBody(m_body->GetID());
+            m_bodyInterface->RemoveBody(m_body->GetID());
+        m_bodyInterface->DestroyBody(m_body->GetID());
     }
 
     m_body = nullptr;
@@ -614,9 +597,8 @@ void Body::sync()
     if (m_body == nullptr || !m_usedInSimulation || activationMode == JPH::EActivation::DontActivate)
         return;
 
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
-    const auto pos = bodyInterface.GetPosition(m_body->GetID());
-    const auto rotation = bodyInterface.GetRotation(m_body->GetID());
+    const auto pos = m_bodyInterface->GetPosition(m_body->GetID());
+    const auto rotation = m_bodyInterface->GetRotation(m_body->GetID());
     const auto qtPosition = PhysicsUtils::toQtType(pos);
     const auto qtRotation = PhysicsUtils::toQtType(rotation);
 
@@ -641,9 +623,8 @@ void Body::handleScenePositionChanged()
     if (m_body == nullptr || m_syncing)
         return;
 
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
     const auto activationMode = getActivationForMotionType();
-    bodyInterface.SetPosition(m_body->GetID(), PhysicsUtils::toJoltType(scenePosition()), activationMode);
+    m_bodyInterface->SetPosition(m_body->GetID(), PhysicsUtils::toJoltType(scenePosition()), activationMode);
 }
 
 void Body::handleSceneRotationChanged()
@@ -651,9 +632,8 @@ void Body::handleSceneRotationChanged()
     if (m_body == nullptr || m_syncing)
         return;
 
-    auto &bodyInterface = m_jolt->GetBodyInterfaceNoLock();
     const auto activationMode = getActivationForMotionType();
-    bodyInterface.SetRotation(m_body->GetID(), PhysicsUtils::toJoltType(sceneRotation()), activationMode);
+    m_bodyInterface->SetRotation(m_body->GetID(), PhysicsUtils::toJoltType(sceneRotation()), activationMode);
 }
 
 JPH::EActivation Body::getActivationForMotionType() const

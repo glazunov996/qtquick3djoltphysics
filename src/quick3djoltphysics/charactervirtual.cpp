@@ -121,12 +121,12 @@ void CharacterVirtual::setShapeOffset(const QVector3D &shapeOffset)
     emit shapeOffsetChanged(shapeOffset);
 }
 
-CharacterVirtual::BackFaceMode CharacterVirtual::backFaceMode() const
+Quick3dJoltPhysics::BackFaceMode CharacterVirtual::backFaceMode() const
 {
     return m_backFaceMode;
 }
 
-void CharacterVirtual::setBackFaceMode(BackFaceMode backFaceMode)
+void CharacterVirtual::setBackFaceMode(Quick3dJoltPhysics::BackFaceMode backFaceMode)
 {
     if (m_backFaceMode == backFaceMode)
         return;

@@ -3,12 +3,14 @@
 
 #include "abstractphysicscharacter_p.h"
 #include "charactercontactlistener.h"
+#include "qtquick3djoltphysicsglobal_p.h"
 
 #include <QtQuick3DJoltPhysics/qtquick3djoltphysicsglobal.h>
 #include <QtQml/QQmlEngine>
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Character/CharacterVirtual.h>
+
 
 class Q_QUICK3DJOLTPHYSICS_EXPORT ExtendedUpdateSettings : public QObject
 {
@@ -45,7 +47,7 @@ class Q_QUICK3DJOLTPHYSICS_EXPORT CharacterVirtual : public AbstractPhysicsChara
     Q_PROPERTY(float mass READ mass WRITE setMass NOTIFY massChanged)
     Q_PROPERTY(float maxStrength READ maxStrength WRITE setMaxStrength NOTIFY maxStrengthChanged)
     Q_PROPERTY(QVector3D shapeOffset READ shapeOffset WRITE setShapeOffset NOTIFY shapeOffsetChanged)
-    Q_PROPERTY(BackFaceMode backFaceMode READ backFaceMode WRITE setBackFaceMode NOTIFY backFaceModeChanged)
+    Q_PROPERTY(Quick3dJoltPhysics::BackFaceMode backFaceMode READ backFaceMode WRITE setBackFaceMode NOTIFY backFaceModeChanged)
     Q_PROPERTY(float predictiveContactDistance READ predictiveContactDistance WRITE setPredictiveContactDistance NOTIFY predictiveContactDistanceChanged)
     Q_PROPERTY(int maxCollisionIterations READ maxCollisionIterations WRITE setMaxCollisionIterations NOTIFY maxCollisionIterationsChanged)
     Q_PROPERTY(int maxConstraintIterations READ maxConstraintIterations WRITE setMaxConstraintIterations NOTIFY maxConstraintIterationsChanged)
@@ -64,12 +66,6 @@ public:
     explicit CharacterVirtual(QQuick3DNode *parent = nullptr);
     ~CharacterVirtual() override;
 
-    enum class BackFaceMode {
-        IgnoreBackFaces,
-        CollideWithBackFaces
-    };
-    Q_ENUM(BackFaceMode)
-
     QVector4D supportingVolume() const;
     void setSupportingVolume(const QVector4D &supportingVolume);
     float maxSlopeAngle() const;
@@ -82,8 +78,8 @@ public:
     void setMaxStrength(float maxStrength);
     QVector3D shapeOffset() const;
     void setShapeOffset(const QVector3D &shapeOffset);
-    BackFaceMode backFaceMode() const;
-    void setBackFaceMode(BackFaceMode backFaceMode);
+    Quick3dJoltPhysics::BackFaceMode backFaceMode() const;
+    void setBackFaceMode(Quick3dJoltPhysics::BackFaceMode backFaceMode);
     float predictiveContactDistance() const;
     void setPredictiveContactDistance(float predictiveContactDistance);
     int maxCollisionIterations() const;
@@ -132,7 +128,7 @@ signals:
     void massChanged(float mass);
     void maxStrengthChanged(float maxStrength);
     void shapeOffsetChanged(const QVector3D &shapeOffset);
-    void backFaceModeChanged(BackFaceMode backFaceMode);
+    void backFaceModeChanged(Quick3dJoltPhysics::BackFaceMode backFaceMode);
     void predictiveContactDistanceChanged(float predictiveContactDistance);
     void maxCollisionIterationsChanged(int maxCollisionIterations);
     void maxConstraintIterationsChanged(int maxConstraintIterations);
@@ -162,7 +158,7 @@ private:
     QVector4D m_supportingVolume;
     float m_maxSlopeAngle = 50.0;
     QVector3D m_shapeOffset;
-    BackFaceMode m_backFaceMode;
+    Quick3dJoltPhysics::BackFaceMode m_backFaceMode;
     AbstractCharacterContactListener *m_characterContactListener = nullptr;
     int m_innerBodyID = -1;
     AbstractShape *m_innerBodyShape = nullptr;

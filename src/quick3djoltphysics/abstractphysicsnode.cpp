@@ -1,6 +1,8 @@
 #include "abstractphysicsnode_p.h"
 #include "physicssystem_p.h"
 
+#include <Jolt/Physics/PhysicsSystem.h>
+
 AbstractPhysicsNode::AbstractPhysicsNode(QQuick3DNode *parent) : QQuick3DNode(parent)
 {
 }
@@ -24,6 +26,7 @@ void AbstractPhysicsNode::init(JPH::PhysicsSystem *jolt, JPH::TempAllocator *tem
 
     m_jolt = jolt;
     m_tempAllocator = tempAllocator;
+    m_bodyInterface = &jolt->GetBodyInterface();
 
     updateJoltObject();
 }

@@ -6,11 +6,13 @@ CollideShapeResult::CollideShapeResult(const QVector3D &contactPointOn1,
                                        const QVector3D &contactPointOn2,
                                        const QVector3D &penetrationAxis,
                                        float penetrationDepth,
+                                       const QVector3D &surfaceNormal,
                                        Body *body2)
     : m_contactPointOn1(contactPointOn1)
     , m_contactPointOn2(contactPointOn2)
     , m_penetrationAxis(penetrationAxis)
     , m_penetrationDepth(penetrationDepth)
+    , m_surfaceNormal(surfaceNormal)
     , m_body2(body2)
 {
 }
@@ -33,6 +35,11 @@ QVector3D CollideShapeResult::penetrationAxis() const
 float CollideShapeResult::penetrationDepth() const
 {
     return m_penetrationDepth;
+}
+
+QVector3D CollideShapeResult::surfaceNormal() const
+{
+    return m_surfaceNormal;
 }
 
 Body *CollideShapeResult::body2() const

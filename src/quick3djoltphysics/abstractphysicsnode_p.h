@@ -7,6 +7,7 @@
 namespace JPH {
 class PhysicsSystem;
 class TempAllocator;
+class BodyInterface;
 }
 
 class PhysicsSystem;
@@ -29,6 +30,7 @@ protected:
 
     JPH::PhysicsSystem *m_jolt = nullptr;
     JPH::TempAllocator *m_tempAllocator = nullptr;
+    JPH::BodyInterface *m_bodyInterface = nullptr;
 
     bool m_syncing = false;
 
