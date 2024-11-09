@@ -468,6 +468,80 @@ bool CharacterVirtual::isSlopeTooSteep(const QVector3D &normal)
     return m_character->IsSlopeTooSteep(PhysicsUtils::toJoltType(normal));
 }
 
+QVector3D CharacterVirtual::cancelVelocityTowardsSteepSlopes(const QVector3D &desiredVelocity) const
+{
+    if (m_character == nullptr) {
+        qWarning() << "Warning: Invoking 'cancelVelocityTowardsSteepSlopes' before character is initialized will have no effect";
+        return QVector3D();
+    }
+
+    return PhysicsUtils::toQtType(m_character->CancelVelocityTowardsSteepSlopes(PhysicsUtils::toJoltType(desiredVelocity)));
+}
+
+void CharacterVirtual::update(float deltaTime, const QVector3D &gravity, int broadPhaseLayerFilter, int objectLayerFilter)
+{
+    if (m_character == nullptr) {
+        qWarning() << "Warning: Invoking 'update' before character is initialized will have no effect";
+        return;
+    }
+
+    m_character->Update(deltaTime,
+                        PhysicsUtils::toJoltType(gravity),
+                        m_jolt->GetDefaultBroadPhaseLayerFilter(broadPhaseLayerFilter),
+                        m_jolt->GetDefaultLayerFilter(objectLayerFilter),
+                        {},
+                        {},
+                        *m_tempAllocator);
+
+    sync();
+}
+
+bool CharacterVirtual::canWalkStairs(const QVector3D &linearVelocity) const
+{
+    if (m_character == nullptr) {
+        qWarning() << "Warning: Invoking 'canWalkStairs' before character is initialized will have no effect";
+        return false;
+    }
+
+    return m_character->CanWalkStairs(PhysicsUtils::toJoltType(linearVelocity));
+}
+
+bool CharacterVirtual::walkStairs(float deltaTime, const QVector3D &stepUp, const QVector3D &stepForward, const QVector3D &stepForwardTest, const QVector3D &stepDownExtra, int broadPhaseLayerFilter, int objectLayerFilter)
+{
+    if (m_character == nullptr) {
+        qWarning() << "Warning: Invoking 'walkStairs' before character is initialized will have no effect";
+        return false;
+    }
+
+    return m_character->WalkStairs(deltaTime,
+                                   PhysicsUtils::toJoltType(stepUp),
+                                   PhysicsUtils::toJoltType(stepForward),
+                                   PhysicsUtils::toJoltType(stepForwardTest),
+                                   PhysicsUtils::toJoltType(stepDownExtra),
+                                   m_jolt->GetDefaultBroadPhaseLayerFilter(broadPhaseLayerFilter),
+                                   m_jolt->GetDefaultLayerFilter(objectLayerFilter),
+                                   {},
+                                   {},
+                                   *m_tempAllocator);
+
+    sync();
+}
+
+bool CharacterVirtual::stickToFloor(const QVector3D &stepDown, int broadPhaseLayerFilter, int objectLayerFilter)
+{
+    if (m_character == nullptr) {
+        qWarning() << "Warning: Invoking 'stickToFloor' before character is initialized will have no effect";
+        return false;
+    }
+
+    return m_character->StickToFloor(PhysicsUtils::toJoltType(stepDown),
+                                     m_jolt->GetDefaultBroadPhaseLayerFilter(broadPhaseLayerFilter),
+                                     m_jolt->GetDefaultLayerFilter(objectLayerFilter),
+                                     {},
+                                     {},
+                                     *m_tempAllocator);
+}
+
 void CharacterVirtual::extendedUpdate(float deltaTime,
                                       const QVector3D &gravity,
                                       ExtendedUpdateSettings *updateSettings,
@@ -497,6 +571,8 @@ void CharacterVirtual::extendedUpdate(float deltaTime,
                                 {},
                                 {},
                                 *m_tempAllocator);
+
+    sync();
 }
 
 void CharacterVirtual::refreshContacts(int broadPhaseLayerFilter, int objectLayerFilter)

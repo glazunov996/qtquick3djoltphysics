@@ -51,7 +51,7 @@ Item {
 
     function prePhysicsUpdate(frameDelta) {
         time += frameDelta;
-        if (time >= 1000)
+        if (time >= 1)
             sphereBody.motionQuality = Body.Discrete;
     }
 

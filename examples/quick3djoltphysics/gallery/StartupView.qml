@@ -127,6 +127,10 @@ Item {
             name: "Offset Center Of Mass Shape"
             file: "Shapes/OffsetCenterOfMassShapeTest.qml"
         }
+        ListElement {
+            name: "Plane Shape"
+            file: "Shapes/PlaneShapeTest.qml"
+        }
     }
 
     ListModel {
@@ -182,6 +186,14 @@ Item {
         ListElement {
             name: "Character Virtual"
             file: "Character/CharacterVirtualTest.qml"
+        }
+    }
+
+    ListModel {
+        id: quick3dphyiscsModel
+        ListElement {
+            name: "Simple"
+            file: "Quick3DPhysics/Simple.qml"
         }
     }
 
@@ -261,6 +273,13 @@ Item {
             width: mainView.listItemWidth
             height: count * mainView.listItemHeight
             model: characterModel
+            delegate: listComponent
+        }
+
+        ListView {
+            width: mainView.listItemWidth
+            height: count * mainView.listItemHeight
+            model: quick3dphyiscsModel
             delegate: listComponent
         }
     }

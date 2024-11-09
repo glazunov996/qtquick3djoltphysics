@@ -10,9 +10,9 @@
 
 AbstractShape::AbstractShape(QQuick3DNode *parent) : QQuick3DNode(parent)
 {
-    connect(this, &QQuick3DNode::positionChanged, this, &AbstractShape::handleNodeChanged);
-    connect(this, &QQuick3DNode::rotationChanged, this, &AbstractShape::handleNodeChanged);
-    connect(this, &QQuick3DNode::sceneScaleChanged, this, &AbstractShape::handleNodeChanged);
+    connect(this, &QQuick3DNode::positionChanged, this, &AbstractShape::handleRotationPositionChanged);
+    connect(this, &QQuick3DNode::rotationChanged, this, &AbstractShape::handleRotationPositionChanged);
+    connect(this, &QQuick3DNode::sceneScaleChanged, this, &AbstractShape::handleScaleChanged);
 }
 
 AbstractShape::~AbstractShape() = default;
@@ -45,6 +45,7 @@ void AbstractShape::setOffsetCenterOfMass(const QVector3D &offsetCenterOfMass)
         return;
 
     m_offsetCenterOfMass = offsetCenterOfMass;
+    m_offsetCenterOfMassDirty = true;
     updateJoltShape();
 
     emit offsetCenterOfMassChanged(m_offsetCenterOfMass);
@@ -76,23 +77,43 @@ void AbstractShape::updateJoltShape()
 
     Q_ASSERT(m_shape);
 
+    if (m_isCompounded)
+        return;
+
     if (m_shape->GetType() == JPH::EShapeType::Convex) {
         auto *convexShape = reinterpret_cast<JPH::ConvexShape *>(m_shape.GetPtr());
         convexShape->SetDensity(m_density);
     }
 
-    if (!qFuzzyCompare(m_offsetCenterOfMass, QVector3D()))
+    if (m_offsetCenterOfMassDirty) {
         m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(m_offsetCenterOfMass));
+        m_offsetCenterOfMassDirty = false;
+    }
 
-    if (!qFuzzyCompare(sceneScale(), QVector3D(1, 1, 1)))
+    if (m_scaleDirty) {
         m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
+        m_scaleDirty = false;
+    }
 
-    if (!qFuzzyCompare(position(), QVector3D()) || !qFuzzyCompare(rotation(), QQuaternion()))
+    if (m_rotationPositionDirty) {
         m_shape = new JPH::RotatedTranslatedShape(PhysicsUtils::toJoltType(position()), PhysicsUtils::toJoltType(rotation()), m_shape);
+        m_rotationPositionDirty = false;
+    }
 }
 
-void AbstractShape::handleNodeChanged()
+void AbstractShape::handleRotationPositionChanged()
 {
+    m_rotationPositionDirty = true;
+
+    updateJoltShape();
+
+    emit changed();
+}
+
+void AbstractShape::handleScaleChanged()
+{
+    m_scaleDirty = true;
+
     updateJoltShape();
 
     emit changed();

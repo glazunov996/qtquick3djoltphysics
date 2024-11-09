@@ -60,8 +60,8 @@ Item {
 
     function prePhysicsUpdate(frameDelta) {
         time += frameDelta;
-        if (time >= 3000) {
-            var index = Math.floor(time / 3000) % shapeComponents.length;
+        if (time >= 3) {
+            var index = Math.floor(time / 3) % shapeComponents.length;
             if (currentShapeIndex !== index) {
                 currentShapeIndex = index;
                 shape.destroy();

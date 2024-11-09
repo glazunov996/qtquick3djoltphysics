@@ -90,6 +90,7 @@ qt_add_qml_module(gallery
     QML_FILES Shapes/OffsetCenterOfMassShapeTest.qml
     QML_FILES Shapes/SphereShapeTest.qml
     QML_FILES Shapes/StaticCompoundShapeTest.qml
+    QML_FILES Shapes/PlaneShapeTest.qml
     QML_FILES StartupView.qml
     QML_FILES Character/CharacterTest.qml
     QML_FILES General/CenterOfMassTest.qml
@@ -98,6 +99,7 @@ qt_add_qml_module(gallery
     QML_FILES CustomSlider.qml
     QML_FILES Constraints/SwingTwistConstraintTest.qml
     QML_FILES Constraints/FixedConstraintTest.qml
+    QML_FILES Quick3DPhysics/Simple.qml
 )
 
 install(TARGETS gallery

@@ -28,6 +28,7 @@ qt_internal_add_qml_module(Quick3DJoltPhysics
         convexhullshape_p.h convexhullshape.cpp
         cylindershape_p.h cylindershape.cpp
         distanceconstraint_p.h distanceconstraint.cpp
+        emptyshape_p.h emptyshape.cpp
         fixedconstraint_p.h fixedconstraint.cpp
         groupfiltertable_p.h groupfiltertable.cpp
         hingeconstraint_p.h hingeconstraint.cpp
@@ -37,6 +38,7 @@ qt_internal_add_qml_module(Quick3DJoltPhysics
         physicssettings_p.h physicssettings.cpp
         physicssystem_p.h physicssystem.cpp
         physicsutils_p.h
+        planeshape_p.h planeshape.cpp
         pointconstraint_p.h pointconstraint.cpp
         qtquick3djoltphysicsglobal.h
         qtquick3djoltphysicsglobal_p.h

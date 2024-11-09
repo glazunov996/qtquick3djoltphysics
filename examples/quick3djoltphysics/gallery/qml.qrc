@@ -46,6 +46,8 @@
         <file>Shapes/ConvexHullShapeTest.qml</file>
         <file>Shapes/CapsuleShapeTest.qml</file>
         <file>Shapes/BoxShapeTest.qml</file>
+        <file>Shapes/PlaneShapeTest.qml</file>
+        <file>Quick3DPhysics/Simple.qml</file>
         <file>meshes/Cube.mesh</file>
         <file>images/qt_logo.png</file>
         <file>images/icon_settings.png</file>

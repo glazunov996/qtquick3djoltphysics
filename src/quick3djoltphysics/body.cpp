@@ -563,8 +563,6 @@ void Body::updateJoltObject()
         if (m_collisionGroup)
             m_bodySettings.mCollisionGroup = m_collisionGroup->getJoltCollisionGroup();
 
-        m_bodySettings.mIsSensor = isSensor();
-
         m_body = m_bodyInterface->CreateBody(m_bodySettings);
         m_body->SetUserData(reinterpret_cast<JPH::uint64>(this));
 

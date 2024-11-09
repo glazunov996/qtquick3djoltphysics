@@ -3,7 +3,6 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
-#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 CapsuleShape::CapsuleShape(QQuick3DNode *parent) : AbstractShape(parent)
 {

@@ -65,6 +65,7 @@ qt_internal_extend_target(BundledJoltPhysics
         Jolt/Core/StreamOut.h
         Jolt/Core/StreamUtils.h
         Jolt/Core/StreamWrapper.h
+        Jolt/Core/StridedPtr.h
         Jolt/Core/StringTools.cpp
         Jolt/Core/StringTools.h
         Jolt/Core/STLAlignedAllocator.h
@@ -96,12 +97,10 @@ qt_internal_extend_target(BundledJoltPhysics
         Jolt/Geometry/OrientedBox.h
         Jolt/Geometry/Plane.h
         Jolt/Geometry/RayAABox.h
-        Jolt/Geometry/RayAABox8.h
         Jolt/Geometry/RayCapsule.h
         Jolt/Geometry/RayCylinder.h
         Jolt/Geometry/RaySphere.h
         Jolt/Geometry/RayTriangle.h
-        Jolt/Geometry/RayTriangle8.h
         Jolt/Geometry/Sphere.h
         Jolt/Geometry/Triangle.h
         Jolt/Jolt.cmake
@@ -131,15 +130,11 @@ qt_internal_extend_target(BundledJoltPhysics
         Jolt/Math/Trigonometry.h
         Jolt/Math/UVec4.h
         Jolt/Math/UVec4.inl
-        Jolt/Math/UVec8.h
-        Jolt/Math/UVec8.inl
         Jolt/Math/Vec3.cpp
         Jolt/Math/Vec3.h
         Jolt/Math/Vec3.inl
         Jolt/Math/Vec4.h
         Jolt/Math/Vec4.inl
-        Jolt/Math/Vec8.h
-        Jolt/Math/Vec8.inl
         Jolt/Math/Vector.h
         Jolt/ObjectStream/GetPrimitiveTypeOfType.h
         Jolt/ObjectStream/ObjectStream.cpp
@@ -168,7 +163,6 @@ qt_internal_extend_target(BundledJoltPhysics
         Jolt/Physics/Body/Body.cpp
         Jolt/Physics/Body/Body.h
         Jolt/Physics/Body/Body.inl
-        Jolt/Physics/Body/BodyAccess.cpp
         Jolt/Physics/Body/BodyAccess.h
         Jolt/Physics/Body/BodyActivationListener.h
         Jolt/Physics/Body/BodyCreationSettings.cpp
@@ -225,6 +219,7 @@ qt_internal_extend_target(BundledJoltPhysics
         Jolt/Physics/Collision/CollideConvexVsTriangles.h
         Jolt/Physics/Collision/CollidePointResult.h
         Jolt/Physics/Collision/CollideShape.h
+        Jolt/Physics/Collision/CollideSoftBodyVertexIterator.h
         Jolt/Physics/Collision/CollideSoftBodyVerticesVsTriangles.h
         Jolt/Physics/Collision/CollideSphereVsTriangles.cpp
         Jolt/Physics/Collision/CollideSphereVsTriangles.h
@@ -271,6 +266,8 @@ qt_internal_extend_target(BundledJoltPhysics
         Jolt/Physics/Collision/Shape/CylinderShape.h
         Jolt/Physics/Collision/Shape/DecoratedShape.cpp
         Jolt/Physics/Collision/Shape/DecoratedShape.h
+        Jolt/Physics/Collision/Shape/EmptyShape.cpp
+        Jolt/Physics/Collision/Shape/EmptyShape.h
         Jolt/Physics/Collision/Shape/GetTrianglesContext.h
         Jolt/Physics/Collision/Shape/HeightFieldShape.cpp
         Jolt/Physics/Collision/Shape/HeightFieldShape.h
@@ -280,6 +277,8 @@ qt_internal_extend_target(BundledJoltPhysics
         Jolt/Physics/Collision/Shape/MutableCompoundShape.h
         Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.cpp
         Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h
+        Jolt/Physics/Collision/Shape/PlaneShape.cpp
+        Jolt/Physics/Collision/Shape/PlaneShape.h
         Jolt/Physics/Collision/Shape/PolyhedronSubmergedVolumeCalculator.h
         Jolt/Physics/Collision/Shape/RotatedTranslatedShape.cpp
         Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h
@@ -297,6 +296,8 @@ qt_internal_extend_target(BundledJoltPhysics
         Jolt/Physics/Collision/Shape/TaperedCapsuleShape.cpp
         Jolt/Physics/Collision/Shape/TaperedCapsuleShape.gliffy
         Jolt/Physics/Collision/Shape/TaperedCapsuleShape.h
+        Jolt/Physics/Collision/Shape/TaperedCylinderShape.cpp
+        Jolt/Physics/Collision/Shape/TaperedCylinderShape.h
         Jolt/Physics/Collision/Shape/TriangleShape.cpp
         Jolt/Physics/Collision/Shape/TriangleShape.h
         Jolt/Physics/Collision/ShapeCast.h
@@ -365,7 +366,6 @@ qt_internal_extend_target(BundledJoltPhysics
         Jolt/Physics/IslandBuilder.h
         Jolt/Physics/LargeIslandSplitter.cpp
         Jolt/Physics/LargeIslandSplitter.h
-        Jolt/Physics/PhysicsLock.cpp
         Jolt/Physics/PhysicsLock.h
         Jolt/Physics/PhysicsScene.cpp
         Jolt/Physics/PhysicsScene.h

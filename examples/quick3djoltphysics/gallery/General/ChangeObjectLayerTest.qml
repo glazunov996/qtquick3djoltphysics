@@ -47,7 +47,7 @@ Item {
 
     function prePhysicsUpdate(frameDelta) {
         time += frameDelta;
-        if (time >= 2000) {
+        if (time >= 2) {
             isDebris = !isDebris;
             movingBody.position = Qt.vector3d(0, 1.5, 0)
 

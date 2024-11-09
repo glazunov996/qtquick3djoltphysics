@@ -10,9 +10,6 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
-#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
-#include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
-#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 #include <QDebug>
 
@@ -510,6 +507,24 @@ void MeshShape::setGeometry(QQuick3DGeometry *newGeometry)
     emit changed();
 }
 
+float MeshShape::activeEdgeCosThresholdAngle() const
+{
+    return m_activeEdgeCosThresholdAngle;
+}
+
+void MeshShape::setActiveEdgeCosThresholdAngle(float activeEdgeCosThresholdAngle)
+{
+    if (qFuzzyCompare(activeEdgeCosThresholdAngle, m_activeEdgeCosThresholdAngle))
+        return;
+
+    m_activeEdgeCosThresholdAngle = activeEdgeCosThresholdAngle;
+
+    updateJoltShape();
+
+    emit activeEdgeCosThresholdAngleChanged();
+    emit changed();
+}
+
 void MeshShape::createJoltShape()
 {
     if (m_mesh == nullptr)
@@ -518,6 +533,8 @@ void MeshShape::createJoltShape()
     auto meshShapeSettings = m_mesh->meshShapeSettings();
     if (!meshShapeSettings)
         return;
+
+    meshShapeSettings->mActiveEdgeCosThresholdAngle = m_activeEdgeCosThresholdAngle;
 
     auto shapeResult = meshShapeSettings->Create();
     m_shape = shapeResult.Get();

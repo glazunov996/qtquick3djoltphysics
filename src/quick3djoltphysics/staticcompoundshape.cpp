@@ -42,13 +42,13 @@ void StaticCompoundShape::qmlAppendShape(QQmlListProperty<AbstractShape> *list, 
     StaticCompoundShape *self = static_cast<StaticCompoundShape *>(list->object);
     self->m_shapes.push_back(shape);
 
+    shape->m_isCompounded = true;
+
     connect(shape, &QObject::destroyed, self, [self](QObject *shape) {
         self->m_shapes.removeAll(static_cast<AbstractShape *>(shape));
     });
 
     if (shape->parentItem() == nullptr) {
-        // If the material has no parent, check if it has a hierarchical parent that's a
-        // QQuick3DObject and re-parent it to that, e.g., inline materials
         QQuick3DObject *parentItem = qobject_cast<QQuick3DObject *>(shape->parent());
         if (parentItem) {
             shape->setParentItem(parentItem);
@@ -56,10 +56,10 @@ void StaticCompoundShape::qmlAppendShape(QQmlListProperty<AbstractShape> *list, 
             const auto &scenManager = QQuick3DObjectPrivate::get(self)->sceneManager;
             if (scenManager)
                 QQuick3DObjectPrivate::refSceneManager(shape, *scenManager);
-            // else: If there's no scene manager, defer until one is set, see itemChange()
         }
     }
 
+    self->updateJoltShape();
     emit self->changed();
 }
 
@@ -81,8 +81,12 @@ void StaticCompoundShape::qmlClearShapes(QQmlListProperty<AbstractShape> *list)
     for (auto *shape : std::as_const(self->m_shapes)) {
         if (shape->parentItem() == nullptr)
             QQuick3DObjectPrivate::get(shape)->derefSceneManager();
+        shape->disconnect(self);
+        shape->m_isCompounded = false;
     }
+
     self->m_shapes.clear();
 
+    self->updateJoltShape();
     emit self->changed();
 }

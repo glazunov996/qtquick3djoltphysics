@@ -136,7 +136,8 @@ Item {
             AppSettings.playPhysics = !AppSettings.playPhysics;
             break;
         case Qt.Key_R:
-            AppSettings.testRestartNeeded()
+            status.useMouse = false;
+            AppSettings.testRestartNeeded();
             break;
         }
     }

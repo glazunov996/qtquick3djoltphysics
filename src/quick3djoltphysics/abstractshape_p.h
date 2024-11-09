@@ -41,13 +41,20 @@ protected:
 
     JPH::Ref<JPH::Shape> m_shape = nullptr;
     bool m_shapeInitialized = false;
+    bool m_isCompounded = false;
 
 private slots:
-    void handleNodeChanged();
+    void handleRotationPositionChanged();
+    void handleScaleChanged();
 
 private:
+    friend class StaticCompoundShape;
+
     float m_density = 1000.0f;
     QVector3D m_offsetCenterOfMass;
+    bool m_offsetCenterOfMassDirty = false;
+    bool m_rotationPositionDirty = false;
+    bool m_scaleDirty = false;
 };
 
 #endif // ABSTRACTSHAPE_P_H

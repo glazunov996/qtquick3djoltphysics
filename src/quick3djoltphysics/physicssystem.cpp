@@ -560,7 +560,11 @@ QVector<CollideShapeResult> PhysicsSystem::collideShape(AbstractShape *shape, co
     inSettings.mMaxSeparationDistance = settings->maxSeparationDistance;
     inSettings.mBackFaceMode = static_cast<JPH::EBackFaceMode>(settings->backFaceMode);
 
-    m_jolt->GetNarrowPhaseQuery().CollideShape(shape->getJoltShape(), JPH::Vec3::sReplicate(1.0f), PhysicsUtils::toJoltType(transform), inSettings, PhysicsUtils::toJoltType(baseOffset), collector,
+    m_jolt->GetNarrowPhaseQuery().CollideShape(shape->getJoltShape(),
+                                               JPH::Vec3::sReplicate(1.0f),
+                                               PhysicsUtils::toJoltType(transform),
+                                               inSettings,
+                                               PhysicsUtils::toJoltType(baseOffset), collector,
                                                JPH::SpecifiedBroadPhaseLayerFilter(JPH::BroadPhaseLayer(broadPhaseLayerFilter)),
                                                JPH::SpecifiedObjectLayerFilter(JPH::ObjectLayer(objectLayerFilter)));
 

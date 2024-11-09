@@ -12,12 +12,6 @@ namespace JPH {
 class CharacterContactListener;
 }
 
-struct Q_QUICK3DJOLTPHYSICS_EXPORT CharacterContactSettings
-{
-    bool canPushCharacter;
-    bool canReceiveImpulses;
-};
-
 class Q_QUICK3DJOLTPHYSICS_EXPORT AbstractCharacterContactListener : public QObject
 {
     Q_OBJECT
@@ -26,6 +20,12 @@ class Q_QUICK3DJOLTPHYSICS_EXPORT AbstractCharacterContactListener : public QObj
 public:
     explicit AbstractCharacterContactListener(QObject *parent = nullptr);
     ~AbstractCharacterContactListener() override;
+
+    struct CharacterContactSettings
+    {
+        bool canPushCharacter;
+        bool canReceiveImpulses;
+    };
 
     struct Contact
     {

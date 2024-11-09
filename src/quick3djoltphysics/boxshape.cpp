@@ -4,7 +4,6 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
-#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 BoxShape::BoxShape(QQuick3DNode *parent) : AbstractShape(parent)
 {

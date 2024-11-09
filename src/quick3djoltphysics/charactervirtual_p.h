@@ -116,6 +116,11 @@ public:
 
     Q_INVOKABLE bool isSlopeTooSteep(const QVector3D &normal);
 
+    Q_INVOKABLE QVector3D cancelVelocityTowardsSteepSlopes(const QVector3D &desiredVelocity) const;
+    Q_INVOKABLE void update(float deltaTime, const QVector3D &gravity, int broadPhaseLayerFilter, int objectLayerFilter);
+    Q_INVOKABLE bool canWalkStairs(const QVector3D &linearVelocity) const;
+    Q_INVOKABLE bool walkStairs(float deltaTime, const QVector3D &stepUp, const QVector3D &stepForward, const QVector3D &stepForwardTest, const QVector3D &stepDownExtra, int broadPhaseLayerFilter, int objectLayerFilter);
+    Q_INVOKABLE bool stickToFloor(const QVector3D &stepDown, int broadPhaseLayerFilter, int objectLayerFilter);
     Q_INVOKABLE void extendedUpdate(float deltaTime, const QVector3D &gravity, ExtendedUpdateSettings *updateSettings, int broadPhaseLayerFilter, int objectLayerFilter);
     Q_INVOKABLE void refreshContacts(int broadPhaseLayerFilter, int objectLayerFilter);
     Q_INVOKABLE void updateGroundVelocity();

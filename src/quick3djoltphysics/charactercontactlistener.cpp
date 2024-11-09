@@ -6,15 +6,15 @@
 #include <Jolt/Physics/Character/CharacterVirtual.h>
 #include <Jolt/Physics/Body/Body.h>
 
-static inline CharacterContactSettings toCharacterContactSettings(const JPH::CharacterContactSettings &ioSettings)
+static inline AbstractCharacterContactListener::CharacterContactSettings toCharacterContactSettings(const JPH::CharacterContactSettings &ioSettings)
 {
-    CharacterContactSettings settings;
+    AbstractCharacterContactListener::CharacterContactSettings settings;
     settings.canPushCharacter = ioSettings.mCanPushCharacter;
     settings.canReceiveImpulses = ioSettings.mCanReceiveImpulses;
     return settings;
 }
 
-static inline JPH::CharacterContactSettings toJoltCharacterContactSettings(const CharacterContactSettings &settings)
+static inline JPH::CharacterContactSettings toJoltCharacterContactSettings(const AbstractCharacterContactListener::CharacterContactSettings &settings)
 {
     JPH::CharacterContactSettings ioSettings;
     ioSettings.mCanPushCharacter = settings.canPushCharacter;
@@ -43,6 +43,7 @@ public:
     void OnContactAdded(const JPH::CharacterVirtual *inCharacter, const JPH::BodyID &inBodyID2, const JPH::SubShapeID &inSubShapeID2, JPH::RVec3Arg inContactPosition, JPH::Vec3Arg inContactNormal, JPH::CharacterContactSettings &ioSettings) override
     {
         Q_UNUSED(inCharacter);
+        Q_UNUSED(inSubShapeID2);
 
         auto settings = toCharacterContactSettings(ioSettings);
 
@@ -59,6 +60,7 @@ public:
     void OnContactSolve(const JPH::CharacterVirtual *inCharacter, const JPH::BodyID &inBodyID2, const JPH::SubShapeID &inSubShapeID2, JPH::RVec3Arg inContactPosition, JPH::Vec3Arg inContactNormal, JPH::Vec3Arg inContactVelocity, const JPH::PhysicsMaterial *inContactMaterial, JPH::Vec3Arg inCharacterVelocity, JPH::Vec3 &ioNewCharacterVelocity) override
     {
         Q_UNUSED(inContactMaterial);
+        Q_UNUSED(inSubShapeID2);
 
         const bool isSlopeTooSteep = inCharacter->IsSlopeTooSteep(inContactNormal);
 
