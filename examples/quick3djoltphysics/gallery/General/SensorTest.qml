@@ -58,7 +58,7 @@ Item {
     function prePhysicsUpdate(deltaTime) {
         time += deltaTime
         var pos = Qt.vector3d(-20 * Math.cos(time), 10, 0)
-        kinematicBody.moveKinematic(pos, Qt.quaternion(1, 0, 0, 0), deltaTime)
+        kinematicBody.kinematicPosition = pos;
 
         var center = Qt.vector3d(0, 10, 0)
         var centrifugalForce = 10.0

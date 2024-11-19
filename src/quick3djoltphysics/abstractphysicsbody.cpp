@@ -6,11 +6,7 @@ AbstractPhysicsBody::AbstractPhysicsBody(QQuick3DNode *parent) : AbstractPhysics
 {
 }
 
-AbstractPhysicsBody::~AbstractPhysicsBody()
-{
-    if (m_shape != nullptr)
-        m_shape->disconnect();
-}
+AbstractPhysicsBody::~AbstractPhysicsBody() = default;
 
 AbstractShape *AbstractPhysicsBody::shape() const
 {
@@ -22,39 +18,24 @@ void AbstractPhysicsBody::setShape(AbstractShape *shape)
     if (m_shape == shape)
         return;
 
+    QQuick3DObjectPrivate::attachWatcher(this, &AbstractPhysicsBody::setShape, shape, m_shape);
     if (m_shape != nullptr)
         m_shape->disconnect(m_shapeSignalConnection);
-
     m_shape = shape;
-
-    if (m_shape->parentItem() == nullptr) {
-        QQuick3DObject *parentItem = qobject_cast<QQuick3DObject *>(shape->parent());
-        if (parentItem) {
+    if (m_shape) {
+        if (shape->parentItem() == nullptr) {
+            QQuick3DObject *parentItem = qobject_cast<QQuick3DObject *>(shape->parent());
             m_shape->setParentItem(parentItem);
-        } else {
-            const auto &sceneManager = QQuick3DObjectPrivate::get(this)->sceneManager;
-            if (sceneManager)
-                QQuick3DObjectPrivate::refSceneManager(m_shape, *sceneManager);
         }
+        m_shapeSignalConnection = QObject::connect(m_shape, &AbstractShape::changed, this,
+                                                   [this] { updateJoltObject(); });
     }
 
-    m_shapeSignalConnection = QObject::connect(m_shape, &AbstractShape::changed, this,
-                                               [this]
-    {
-        m_shapeDirty = true;
-        updateJoltObject();
-    });
-
-    QObject::connect(m_shape, &QObject::destroyed, this,
-                     [this]
-    {
-        if (m_shape->parentItem() == nullptr)
-            QQuick3DObjectPrivate::get(m_shape)->derefSceneManager();
-        m_shape = nullptr;
-    });
-
-    m_shapeDirty = true;
     updateJoltObject();
-
     emit shapeChanged(m_shape);
+}
+
+void AbstractPhysicsBody::cleanup()
+{
+    setShape(nullptr);
 }

@@ -120,6 +120,10 @@ Item {
             file: "Shapes/MeshShapeTest.qml"
         }
         ListElement {
+            name: "HeightField Shape"
+            file: "Shapes/HeightFieldShapeTest.qml"
+        }
+        ListElement {
             name: "Static Compound Shape"
             file: "Shapes/StaticCompoundShapeTest.qml"
         }
@@ -186,14 +190,6 @@ Item {
         ListElement {
             name: "Character Virtual"
             file: "Character/CharacterVirtualTest.qml"
-        }
-    }
-
-    ListModel {
-        id: quick3dphyiscsModel
-        ListElement {
-            name: "Simple"
-            file: "Quick3DPhysics/Simple.qml"
         }
     }
 
@@ -273,13 +269,6 @@ Item {
             width: mainView.listItemWidth
             height: count * mainView.listItemHeight
             model: characterModel
-            delegate: listComponent
-        }
-
-        ListView {
-            width: mainView.listItemWidth
-            height: count * mainView.listItemHeight
-            model: quick3dphyiscsModel
             delegate: listComponent
         }
     }

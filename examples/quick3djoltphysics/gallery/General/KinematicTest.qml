@@ -157,6 +157,7 @@ Item {
                 objectLayer: moving
                 motionType: Body.Kinematic
                 position: Qt.vector3d(10, 10, 0)
+                kinematicPosition: position // bind to position, when using linearVelocity for kinematic
                 Model {
                     source: "#Sphere"
                     materials: PrincipledMaterial {

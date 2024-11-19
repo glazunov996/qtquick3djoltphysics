@@ -174,6 +174,7 @@ Item {
             objectLayer: moving
             motionType: Body.Kinematic
             position: Qt.vector3d(0, 1, 0)
+            kinematicPosition: Qt.vector3d(0, 1, 0)
             Model {
                 source: "#Cube"
                 materials: PrincipledMaterial {

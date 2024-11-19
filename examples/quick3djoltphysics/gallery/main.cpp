@@ -8,9 +8,13 @@
 
 #include "mousehandler.h"
 
+#include "../shared/shared.h"
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+
+    registerSharedTypes();
 
     QSurfaceFormat::setDefaultFormat(QQuick3D::idealSurfaceFormat());
     qputenv("QT_QUICK_CONTROLS_STYLE", "Basic");

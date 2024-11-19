@@ -37,22 +37,22 @@ Q_ALWAYS_INLINE JPH::Mat44 toJoltType(const QMatrix4x4 &mat)
                       toJoltType(mat.column(3)));
 }
 
-Q_ALWAYS_INLINE QVector3D toQtType(const JPH::Vec3 &vec)
+Q_ALWAYS_INLINE QVector3D toQtType(const JPH::Vec3Arg &vec)
 {
     return QVector3D(vec.GetX(), vec.GetY(), vec.GetZ());
 }
 
-Q_ALWAYS_INLINE QVector4D toQtType(const JPH::Vec4 &vec)
+Q_ALWAYS_INLINE QVector4D toQtType(const JPH::Vec4Arg &vec)
 {
     return QVector4D(vec.GetX(), vec.GetY(), vec.GetZ(), vec.GetW());
 }
 
-Q_ALWAYS_INLINE QQuaternion toQtType(const JPH::Quat &quat)
+Q_ALWAYS_INLINE QQuaternion toQtType(const JPH::QuatArg &quat)
 {
     return QQuaternion(quat.GetW(), quat.GetX(), quat.GetY(), quat.GetZ());
 }
 
-Q_ALWAYS_INLINE QMatrix4x4 toQtType(const JPH::Mat44 &mat)
+Q_ALWAYS_INLINE QMatrix4x4 toQtType(const JPH::Mat44Arg &mat)
 {
     QMatrix4x4 m;
     m.setColumn(0, PhysicsUtils::toQtType(mat.GetColumn4(0)));

@@ -2,19 +2,21 @@
 #include "physicssystem_p.h"
 #include "physicsutils_p.h"
 
-#include <Jolt/Physics/Collision/Shape/Shape.h>
-#include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Body/BodyInterface.h>
 #include <Jolt/Core/Memory.h>
 
+#include <QQuaternion>
+
 Body::Body(QQuick3DNode *parent) : AbstractPhysicsBody(parent)
 {
-    connect(this, &QQuick3DNode::scenePositionChanged, this, &Body::handleScenePositionChanged);
-    connect(this, &QQuick3DNode::sceneRotationChanged, this, &Body::handleSceneRotationChanged);
 }
 
-Body::~Body() = default;
+Body::~Body()
+{
+    Body::cleanup();
+}
 
 int Body::bodyID() const
 {
@@ -264,6 +266,56 @@ void Body::setInertia(const QMatrix4x4 &inertia)
     emit inertiaChanged(m_inertia);
 }
 
+QVector3D Body::offsetCenterOfMass() const
+{
+    return m_offsetCenterOfMass;
+}
+
+void Body::setOffsetCenterOfMass(const QVector3D &offsetCenterOfMass)
+{
+    if (m_offsetCenterOfMass == offsetCenterOfMass)
+        return;
+
+    m_offsetCenterOfMass = offsetCenterOfMass;
+    updateJoltObject();
+
+    emit offsetCenterOfMassChanged(m_offsetCenterOfMass);
+}
+
+float Body::maxLinearVelocity() const
+{
+    return m_bodySettings.mMaxLinearVelocity;
+}
+
+void Body::setMaxLinearVelocity(float maxLinearVelocity)
+{
+    if (qFuzzyCompare(m_bodySettings.mMaxLinearVelocity, maxLinearVelocity))
+        return;
+
+    m_bodySettings.mMaxLinearVelocity = maxLinearVelocity;
+    if (m_body)
+        m_body->GetMotionProperties()->SetMaxLinearVelocity(maxLinearVelocity);
+
+    emit maxLinearVelocityChanged(maxLinearVelocity);
+}
+
+float Body::maxAngularVelocity() const
+{
+    return m_bodySettings.mMaxAngularVelocity;
+}
+
+void Body::setMaxAngularVelocity(float maxAngularVelocity)
+{
+    if (qFuzzyCompare(m_bodySettings.mMaxAngularVelocity, maxAngularVelocity))
+        return;
+
+    m_bodySettings.mMaxAngularVelocity = maxAngularVelocity;
+    if (m_body)
+        m_body->GetMotionProperties()->SetMaxAngularVelocity(maxAngularVelocity);
+
+    emit maxAngularVelocityChanged(maxAngularVelocity);
+}
+
 float Body::friction() const
 {
     return m_bodySettings.mFriction;
@@ -349,6 +401,62 @@ void Body::setGravityFactor(float gravityFactor)
     emit gravityFactorChanged(gravityFactor);
 }
 
+QVector3D Body::kinematicPosition() const
+{
+    return m_kinematicPosition;
+}
+
+void Body::setKinematicPosition(const QVector3D &position)
+{
+    if (m_kinematicPosition == position)
+        return;
+
+    m_kinematicPosition = position;
+    emit kinematicPositionChanged(m_kinematicPosition);
+}
+
+QQuaternion Body::kinematicRotation() const
+{
+    return m_kinematicRotation.getQuaternionRotation();
+}
+
+void Body::setKinematicRotation(const QQuaternion &rotation)
+{
+    if (m_kinematicRotation == rotation)
+        return;
+
+    m_kinematicRotation = rotation;
+    emit kinematicRotationChanged(m_kinematicRotation.getQuaternionRotation());
+}
+
+QVector3D Body::kinematicEulerRotation() const
+{
+    return m_kinematicRotation.getEulerRotation();
+}
+
+void Body::setKinematicEulerRotation(const QVector3D &eulerRotation)
+{
+    if (m_kinematicRotation == eulerRotation)
+        return;
+
+    m_kinematicRotation = eulerRotation;
+    emit kinematicEulerRotationChanged(m_kinematicRotation.getEulerRotation());
+}
+
+QVector3D Body::kinematicPivot() const
+{
+    return m_kinematicPivot;
+}
+
+void Body::setKinematicPivot(const QVector3D &pivot)
+{
+    if (m_kinematicPivot == pivot)
+        return;
+
+    m_kinematicPivot = pivot;
+    emit kinematicPivotChanged(m_kinematicPivot);
+}
+
 QVector3D Body::getLinearVelocity() const
 {
     if (m_body == nullptr)
@@ -415,6 +523,14 @@ QVector3D Body::getCenterOfMassPosition() const
         return QVector3D();
 
     return PhysicsUtils::toQtType(m_body->GetCenterOfMassPosition());
+}
+
+QVector3D Body::getCenterOfMass() const
+{
+    if (m_body == nullptr)
+        return QVector3D();
+
+    return PhysicsUtils::toQtType(m_body->GetShape()->GetCenterOfMass());
 }
 
 void Body::activate()
@@ -527,14 +643,61 @@ void Body::addAngularImpulse(const QVector3D &angularImpulse)
     m_bodyInterface->AddAngularImpulse(m_body->GetID(), PhysicsUtils::toJoltType(angularImpulse));
 }
 
-void Body::moveKinematic(const QVector3D &targetPosition, const QQuaternion &targetRotation, float deltaTime)
+void Body::reset(const QVector3D &position, const QVector3D &eulerRotation)
 {
     if (m_body == nullptr) {
-        qWarning() << "Warning: Invoking 'moveKinematic' before body is initialized will have no effect";
+        qWarning() << "Warning: Invoking 'reset' before body is initialized will have no effect";
         return;
     }
 
-    m_bodyInterface->MoveKinematic(m_body->GetID(), PhysicsUtils::toJoltType(targetPosition), PhysicsUtils::toJoltType(targetRotation), deltaTime);
+    auto *parentNode = this->parentNode();
+    QVector3D scenePosition = parentNode ? parentNode->mapPositionToScene(position) : position;
+
+    const auto activationMode = getActivationForMotionType();
+    m_bodyInterface->SetPositionAndRotation(m_body->GetID(),
+                                            PhysicsUtils::toJoltType(scenePosition),
+                                            PhysicsUtils::toJoltType(QQuaternion::fromEulerAngles(eulerRotation)),
+                                            activationMode);
+    m_body->ResetForce();
+    m_body->ResetTorque();
+    m_body->ResetMotion();
+}
+
+static QMatrix4x4 calculateKinematicNodeTransform(QQuick3DNode *node,
+                                                  QHash<QQuick3DNode *, QMatrix4x4> &transformCache)
+{
+    if (transformCache.contains(node))
+        return transformCache[node];
+
+    QMatrix4x4 localTransform;
+    if (auto body = qobject_cast<const Body *>(node); body != nullptr) {
+        if (body->motionType() != Body::MotionType::Kinematic) {
+            qWarning() << "Non-kinematic body as a parent of a kinematic body is unsupported";
+        }
+        localTransform = QSSGRenderNode::calculateTransformMatrix(body->kinematicPosition(), body->scale(), body->kinematicPivot(),
+                                                                  body->kinematicRotation());
+    } else {
+        localTransform = QSSGRenderNode::calculateTransformMatrix(node->position(), node->scale(), node->pivot(),
+                                                                  node->rotation());
+    }
+
+    QQuick3DNode *parent = node->parentNode();
+    if (!parent)
+        return localTransform;
+
+    QMatrix4x4 parentTransform = calculateKinematicNodeTransform(parent, transformCache);
+    QMatrix4x4 sceneTransform = parentTransform * localTransform;
+
+    transformCache[node] = sceneTransform;
+    return sceneTransform;
+}
+
+static void getJoltPositionAndRotation(const QMatrix4x4 &transform, JPH::Vec3 &worldPosition, JPH::Quat &rotation)
+{
+    auto rotationMatrix = transform;
+    QSSGUtils::mat44::normalize(rotationMatrix);
+    rotation = PhysicsUtils::toJoltType(QQuaternion::fromRotationMatrix(QSSGUtils::mat44::getUpper3x3(rotationMatrix)).normalized());
+    worldPosition = PhysicsUtils::toJoltType(QSSGUtils::mat44::getPosition(transform));
 }
 
 void Body::updateJoltObject()
@@ -542,26 +705,48 @@ void Body::updateJoltObject()
     if (m_jolt == nullptr || m_shape == nullptr)
         return;
 
-    const auto &shape = m_shape->getJoltShape();
+    auto shape = m_shape->getJoltShape();
+
+    if (m_motionType == MotionType::Dynamic && shape->MustBeStatic()) {
+        qWarning() << "Cannot make body containing static shape, forcing kinematic.";
+        m_motionType = MotionType::Kinematic;
+        emit motionTypeChanged(m_motionType);
+    }
+
+    if (m_motionType == MotionType::Kinematic && shape->MustBeStatic() && m_overrideMassProperties != OverrideMassProperties::MassAndInertiaProvided) {
+        qWarning() << "Cannot make kinematic body containting static shape without mass and inertia provided, forcing mass 1.0 if not provided.";
+        setOverrideMassProperties(OverrideMassProperties::MassAndInertiaProvided);
+        setMass(1.0);
+        setInertia(QMatrix4x4());
+    }
+
+    if (!shape->MustBeStatic())
+        shape = new JPH::OffsetCenterOfMassShape(shape, PhysicsUtils::toJoltType(m_offsetCenterOfMass));
+
     const auto activationMode = getActivationForMotionType();
 
-    if (m_body) {
-        if (m_shapeDirty)
-            m_bodyInterface->SetShape(m_body->GetID(), shape, true, activationMode);
-    } else {
+    if (m_body == nullptr) {
         m_bodySettings.SetShape(shape);
-        m_bodySettings.mPosition = PhysicsUtils::toJoltType(scenePosition());
-        m_bodySettings.mRotation = PhysicsUtils::toJoltType(sceneRotation());
         m_bodySettings.mMotionType = static_cast<JPH::EMotionType>(m_motionType);
         m_bodySettings.mMotionQuality = static_cast<JPH::EMotionQuality>(m_motionQuality);
         m_bodySettings.mAllowedDOFs = static_cast<JPH::EAllowedDOFs>(m_allowedDOFs);
-
         m_bodySettings.mOverrideMassProperties = static_cast<JPH::EOverrideMassProperties>(m_overrideMassProperties);
         m_bodySettings.mMassPropertiesOverride.mMass = m_mass;
         m_bodySettings.mMassPropertiesOverride.mInertia = PhysicsUtils::toJoltType(m_inertia);
 
         if (m_collisionGroup)
             m_bodySettings.mCollisionGroup = m_collisionGroup->getJoltCollisionGroup();
+
+        if (m_motionType == MotionType::Kinematic) {
+            setKinematicPosition(position());
+            setKinematicRotation(rotation());
+            QHash<QQuick3DNode *, QMatrix4x4> transformCache;
+            const QMatrix4x4 transform = calculateKinematicNodeTransform(this, transformCache);
+            getJoltPositionAndRotation(transform, m_bodySettings.mPosition, m_bodySettings.mRotation);
+        } else {
+            m_bodySettings.mPosition = PhysicsUtils::toJoltType(scenePosition());
+            m_bodySettings.mRotation = PhysicsUtils::toJoltType(sceneRotation());
+        }
 
         m_body = m_bodyInterface->CreateBody(m_bodySettings);
         m_body->SetUserData(reinterpret_cast<JPH::uint64>(this));
@@ -573,9 +758,9 @@ void Body::updateJoltObject()
         emit bodyIDChanged(m_bodyID);
 
         sync();
+    } else {
+        m_bodyInterface->SetShape(m_body->GetID(), shape, true, activationMode);
     }
-
-    m_shapeDirty = false;
 }
 
 void Body::cleanup()
@@ -587,6 +772,47 @@ void Body::cleanup()
     }
 
     m_body = nullptr;
+
+    AbstractPhysicsBody::cleanup();
+}
+
+void Body::preSync(float deltaTime, QHash<QQuick3DNode *, QMatrix4x4> &transformCache)
+{
+    Q_UNUSED(deltaTime)
+
+    if (m_body == nullptr || m_motionType == MotionType::Dynamic)
+        return;
+
+    JPH::Vec3 oldPosition;
+    JPH::Quat oldRotation;
+
+    m_bodyInterface->GetPositionAndRotation(m_body->GetID(), oldPosition, oldRotation);
+
+    if (m_motionType == MotionType::Kinematic) {
+        JPH::Vec3 position;
+        JPH::Quat rotation;
+
+        const QMatrix4x4 transform = calculateKinematicNodeTransform(this, transformCache);
+        getJoltPositionAndRotation(transform, position, rotation);
+
+        if (!qFuzzyCompare(PhysicsUtils::toQtType(oldPosition), PhysicsUtils::toQtType(position))
+                || !qFuzzyCompare(PhysicsUtils::toQtType(oldRotation), PhysicsUtils::toQtType(rotation))) {
+            m_bodyInterface->MoveKinematic(m_body->GetID(), position, rotation, deltaTime);
+            m_moveKinematicNeedsReset = true;
+        } else if (m_moveKinematicNeedsReset) {
+            m_moveKinematicNeedsReset = false;
+            m_body->ResetMotion();
+        }
+    } else {
+        if (!qFuzzyCompare(PhysicsUtils::toQtType(oldPosition), scenePosition())
+                || !qFuzzyCompare(PhysicsUtils::toQtType(oldRotation), sceneRotation())) {
+            const auto activationMode = getActivationForMotionType();
+            m_bodyInterface->SetPositionAndRotation(m_body->GetID(),
+                                                    PhysicsUtils::toJoltType(scenePosition()),
+                                                    PhysicsUtils::toJoltType(sceneRotation()),
+                                                    activationMode);
+        }
+    }
 }
 
 void Body::sync()
@@ -597,12 +823,10 @@ void Body::sync()
 
     const auto pos = m_bodyInterface->GetPosition(m_body->GetID());
     const auto rotation = m_bodyInterface->GetRotation(m_body->GetID());
-    const auto qtPosition = PhysicsUtils::toQtType(pos);
     const auto qtRotation = PhysicsUtils::toQtType(rotation);
+    const auto qtPosition = PhysicsUtils::toQtType(pos);
 
     const QQuick3DNode *parentNode = static_cast<QQuick3DNode *>(parentItem());
-
-    m_syncing = true;
 
     if (!parentNode) {
         setPosition(qtPosition);
@@ -613,25 +837,7 @@ void Body::sync()
         setRotation(relativeRotation);
     }
 
-    m_syncing = false;
-}
-
-void Body::handleScenePositionChanged()
-{
-    if (m_body == nullptr || m_syncing)
-        return;
-
-    const auto activationMode = getActivationForMotionType();
-    m_bodyInterface->SetPosition(m_body->GetID(), PhysicsUtils::toJoltType(scenePosition()), activationMode);
-}
-
-void Body::handleSceneRotationChanged()
-{
-    if (m_body == nullptr || m_syncing)
-        return;
-
-    const auto activationMode = getActivationForMotionType();
-    m_bodyInterface->SetRotation(m_body->GetID(), PhysicsUtils::toJoltType(sceneRotation()), activationMode);
+    AbstractPhysicsBody::sync();
 }
 
 JPH::EActivation Body::getActivationForMotionType() const

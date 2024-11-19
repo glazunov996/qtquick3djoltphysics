@@ -4,15 +4,12 @@
 #include <QtQuick3D>
 
 #include <Jolt/Physics/Collision/Shape/ConvexShape.h>
-#include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 AbstractShape::AbstractShape(QQuick3DNode *parent) : QQuick3DNode(parent)
 {
-    connect(this, &QQuick3DNode::positionChanged, this, &AbstractShape::handleRotationPositionChanged);
-    connect(this, &QQuick3DNode::rotationChanged, this, &AbstractShape::handleRotationPositionChanged);
-    connect(this, &QQuick3DNode::sceneScaleChanged, this, &AbstractShape::handleScaleChanged);
+    connect(this, &QQuick3DNode::sceneScaleChanged, this, [this] { handleShapeChange(); });
 }
 
 AbstractShape::~AbstractShape() = default;
@@ -24,48 +21,23 @@ float AbstractShape::density() const
 
 void AbstractShape::setDensity(float density)
 {
-    if (qFuzzyCompare(density, m_density))
+    if (qFuzzyCompare(m_density, density))
         return;
 
     m_density = density;
-    updateJoltShape();
+    updateJoltShapeDensity();
 
     emit densityChanged(m_density);
-    emit changed();
-}
-
-QVector3D AbstractShape::offsetCenterOfMass() const
-{
-    return m_offsetCenterOfMass;
-}
-
-void AbstractShape::setOffsetCenterOfMass(const QVector3D &offsetCenterOfMass)
-{
-    if (m_offsetCenterOfMass == offsetCenterOfMass)
-        return;
-
-    m_offsetCenterOfMass = offsetCenterOfMass;
-    m_offsetCenterOfMassDirty = true;
-    updateJoltShape();
-
-    emit offsetCenterOfMassChanged(m_offsetCenterOfMass);
-    emit changed();
-}
-
-QVector3D AbstractShape::getCenterOfMass()
-{
-    const auto &shape = getJoltShape();
-    return PhysicsUtils::toQtType(shape->GetCenterOfMass());
 }
 
 JPH::Ref<JPH::Shape> AbstractShape::getJoltShape()
 {
     m_shapeInitialized = true;
 
-    if (m_shape == nullptr)
+    if (m_joltShape == nullptr)
         updateJoltShape();
 
-    return m_shape;
+    return m_joltShape;
 }
 
 void AbstractShape::updateJoltShape()
@@ -75,46 +47,26 @@ void AbstractShape::updateJoltShape()
 
     createJoltShape();
 
-    Q_ASSERT(m_shape);
+    Q_ASSERT(m_joltShape);
 
-    if (m_isCompounded)
-        return;
-
-    if (m_shape->GetType() == JPH::EShapeType::Convex) {
-        auto *convexShape = reinterpret_cast<JPH::ConvexShape *>(m_shape.GetPtr());
-        convexShape->SetDensity(m_density);
+    if (m_joltShape->GetType() != JPH::EShapeType::Decorated) {
+        m_innerJoltShape = m_joltShape;
+        m_joltShape = new JPH::ScaledShape(m_innerJoltShape, PhysicsUtils::toJoltType(sceneScale()));
     }
 
-    if (m_offsetCenterOfMassDirty) {
-        m_shape = new JPH::OffsetCenterOfMassShape(m_shape, PhysicsUtils::toJoltType(m_offsetCenterOfMass));
-        m_offsetCenterOfMassDirty = false;
-    }
-
-    if (m_scaleDirty) {
-        m_shape = new JPH::ScaledShape(m_shape, PhysicsUtils::toJoltType(sceneScale()));
-        m_scaleDirty = false;
-    }
-
-    if (m_rotationPositionDirty) {
-        m_shape = new JPH::RotatedTranslatedShape(PhysicsUtils::toJoltType(position()), PhysicsUtils::toJoltType(rotation()), m_shape);
-        m_rotationPositionDirty = false;
-    }
+    updateJoltShapeDensity();
 }
 
-void AbstractShape::handleRotationPositionChanged()
+void AbstractShape::handleShapeChange()
 {
-    m_rotationPositionDirty = true;
-
     updateJoltShape();
-
     emit changed();
 }
 
-void AbstractShape::handleScaleChanged()
+void AbstractShape::updateJoltShapeDensity()
 {
-    m_scaleDirty = true;
-
-    updateJoltShape();
-
-    emit changed();
+    if (m_innerJoltShape && m_innerJoltShape->GetType() == JPH::EShapeType::Convex) {
+        auto *shape = reinterpret_cast<JPH::ConvexShape *>(m_innerJoltShape.GetPtr());
+        shape->SetDensity(m_density);
+    }
 }

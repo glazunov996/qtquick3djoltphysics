@@ -47,5 +47,5 @@ void BoxShape::setConvexRadius(float convexRadius)
 
 void BoxShape::createJoltShape()
 {
-    m_shape = new JPH::BoxShape(PhysicsUtils::toJoltType(m_extents * 0.5f), m_convexRadius);
+    m_joltShape = new JPH::BoxShape(PhysicsUtils::toJoltType(m_extents * 0.5f), m_convexRadius);
 }

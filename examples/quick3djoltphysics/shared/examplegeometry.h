@@ -7,7 +7,6 @@
 class ExampleTriangleGeometry : public QQuick3DGeometry
 {
     Q_OBJECT
-    QML_NAMED_ELEMENT(ExampleTriangleGeometry)
 
 public:
     ExampleTriangleGeometry();
@@ -19,7 +18,6 @@ private:
 class ExampleBoxGeometry : public QQuick3DGeometry
 {
     Q_OBJECT
-    QML_NAMED_ELEMENT(ExampleBoxGeometry)
 
 public:
     ExampleBoxGeometry();
@@ -31,7 +29,6 @@ private:
 class ExampleMeshGridGeometry: public QQuick3DGeometry
 {
     Q_OBJECT
-    QML_NAMED_ELEMENT(ExampleMeshGridGeometry)
 
 public:
     ExampleMeshGridGeometry();
@@ -43,7 +40,6 @@ private:
 class ExampleStairsGridGeometry : public QQuick3DGeometry
 {
     Q_OBJECT
-    QML_NAMED_ELEMENT(ExampleStairsGridGeometry)
 
 public:
     ExampleStairsGridGeometry();

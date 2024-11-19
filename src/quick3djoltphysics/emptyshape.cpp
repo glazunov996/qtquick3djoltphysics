@@ -11,5 +11,5 @@ EmptyShape::~EmptyShape() = default;
 
 void EmptyShape::createJoltShape()
 {
-    m_shape = new JPH::EmptyShape();
+    m_joltShape = new JPH::EmptyShape();
 }

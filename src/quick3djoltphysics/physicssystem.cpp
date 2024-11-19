@@ -110,10 +110,8 @@ void PhysicsSystem::registerPhysicsNode(AbstractPhysicsNode *physicsNode)
 
 void PhysicsSystem::unRegisterPhysicsNode(AbstractPhysicsNode *physicsNode)
 {
-    for (auto *physicsSystem : *g_physicsSystems) {
+    for (auto *physicsSystem : *g_physicsSystems)
         physicsSystem->m_physicsNodes.removeAll(physicsNode);
-        physicsNode->cleanup();
-    }
 }
 
 PhysicsSettings *PhysicsSystem::settings() const
@@ -432,7 +430,7 @@ static RayCastResult getRayCastHitResult(JPH::PhysicsSystem *jolt, const JPH::RR
 
     if (hadHit) {
         JPH::BodyLockWrite lock(jolt->GetBodyLockInterface(), hit.mBodyID);
-        if (lock.Succeeded()) {
+        if (lock.SucceededAndIsInBroadPhase()) {
             const auto &joltBody = lock.GetBody();
             body = reinterpret_cast<Body *>(joltBody.GetUserData());
             normal = joltBody.GetWorldSpaceSurfaceNormal(hit.mSubShapeID2, position);
@@ -481,7 +479,7 @@ static QVector<Body *> getCollidePointResult(JPH::PhysicsSystem *jolt, const JPH
 
     for (const auto &hit : collector.mHits) {
         JPH::BodyLockRead lock(jolt->GetBodyLockInterface(), hit.mBodyID);
-        if (lock.Succeeded()) {
+        if (lock.SucceededAndIsInBroadPhase()) {
             const auto &joltBody = lock.GetBody();
             Body *body = reinterpret_cast<Body *>(joltBody.GetUserData());
             hits.push_back(body);
@@ -515,7 +513,7 @@ static QVector<CollideShapeResult> getCollideShapeResult(JPH::PhysicsSystem *jol
 
     for (const auto &hit : collector.mHits) {
         JPH::BodyLockRead lock(jolt->GetBodyLockInterface(), hit.mBodyID2);
-        if (lock.Succeeded()) {
+        if (lock.SucceededAndIsInBroadPhase()) {
             const auto &joltBody = lock.GetBody();
             Body *body = reinterpret_cast<Body *>(joltBody.GetUserData());
             const auto &surfaceNormal = joltBody.GetWorldSpaceSurfaceNormal(hit.mSubShapeID2, hit.mContactPointOn2);
@@ -643,6 +641,11 @@ void PhysicsSystem::updateCurrentTime(int currentTime)
     float deltaTime = dt / 1000.0f;
 
     emit beforeFrameDone(deltaTime);
+
+    QHash<QQuick3DNode *, QMatrix4x4> transformCache;
+
+    for (auto physicsNode : std::as_const(m_physicsNodes))
+        physicsNode->preSync(deltaTime, transformCache);
 
     m_jolt->Update(deltaTime, m_collisionSteps, m_tempAllocator, m_jobSystem);
 

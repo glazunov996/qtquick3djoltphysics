@@ -1,3 +1,5 @@
 TEMPLATE = subdirs
 SUBDIRS += \
-    gallery 
+    gallery \
+    customshapes \
+    simple

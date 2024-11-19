@@ -46,7 +46,7 @@ public:
     Q_INVOKABLE QVector3D getGroundNormal() const;
 
     Q_INVOKABLE void postSimulation(float maxSeparationDistance);
-    Q_INVOKABLE bool setShape(AbstractShape *shape, float maxPenetrationDepth);
+    Q_INVOKABLE bool setShape(float maxPenetrationDepth);
 
 signals:
     void bodyIDChanged(int bodyID);
@@ -62,10 +62,9 @@ protected:
     void cleanup() override;
     void sync() override;
 
-private slots:
-    void handleScenePositionChanged();
-
 private:
+    bool getTransformedJoltShapes(JPH::Ref<JPH::Shape> &shape);
+
     QVector4D m_supportingVolume;
     float m_maxSlopeAngle = 50.0;
 

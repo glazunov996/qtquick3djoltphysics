@@ -32,11 +32,18 @@ class Q_QUICK3DJOLTPHYSICS_EXPORT Body : public AbstractPhysicsBody
     Q_PROPERTY(OverrideMassProperties overrideMassProperties READ overrideMassProperties WRITE setOverrideMassProperties NOTIFY overrideMassPropertiesChanged)
     Q_PROPERTY(float mass READ mass WRITE setMass NOTIFY massChanged)
     Q_PROPERTY(QMatrix4x4 inertia READ inertia WRITE setInertia NOTIFY inertiaChanged)
+    Q_PROPERTY(QVector3D offsetCenterOfMass READ offsetCenterOfMass WRITE setOffsetCenterOfMass NOTIFY offsetCenterOfMassChanged)
+    Q_PROPERTY(float maxLinearVelocity READ maxLinearVelocity WRITE setMaxLinearVelocity NOTIFY maxLinearVelocityChanged)
+    Q_PROPERTY(float maxAngularVelocity READ maxAngularVelocity WRITE setMaxAngularVelocity NOTIFY maxAngularVelocityChanged)
     Q_PROPERTY(float friction READ friction WRITE setFriction NOTIFY frictionChanged)
     Q_PROPERTY(float restitution READ restitution WRITE setRestitution NOTIFY restitutionChanged)
     Q_PROPERTY(float linearDamping READ linearDamping WRITE setLinearDamping NOTIFY linearDampingChanged)
     Q_PROPERTY(float angularDamping READ angularDamping WRITE setAngularDamping NOTIFY angularDampingChanged)
     Q_PROPERTY(float gravityFactor READ gravityFactor WRITE setGravityFactor NOTIFY gravityFactorChanged)
+    Q_PROPERTY(QVector3D kinematicPosition READ kinematicPosition WRITE setKinematicPosition NOTIFY kinematicPositionChanged)
+    Q_PROPERTY(QQuaternion kinematicRotation READ kinematicRotation WRITE setKinematicRotation NOTIFY kinematicRotationChanged)
+    Q_PROPERTY(QVector3D kinematicEulerRotation READ kinematicEulerRotation WRITE setKinematicEulerRotation NOTIFY kinematicEulerRotationChanged)
+    Q_PROPERTY(QVector3D kinematicPivot READ kinematicPivot WRITE setKinematicPivot NOTIFY kinematicPivotChanged)
     QML_NAMED_ELEMENT(Body)
 public:
     explicit Body(QQuick3DNode *parent = nullptr);
@@ -101,7 +108,13 @@ public:
     void setMass(float mass);
     QMatrix4x4 inertia() const;
     void setInertia(const QMatrix4x4 &inertia);
+    QVector3D offsetCenterOfMass() const;
+    void setOffsetCenterOfMass(const QVector3D &offsetCenterOfMass);
 
+    float maxLinearVelocity() const;
+    void setMaxLinearVelocity(float maxLinearVelocity);
+    float maxAngularVelocity() const;
+    void setMaxAngularVelocity(float maxAngularVelocity);
     float friction() const;
     void setFriction(float friction);
     float restitution() const;
@@ -113,6 +126,15 @@ public:
     float gravityFactor() const;
     void setGravityFactor(float gravityFactor);
 
+    QVector3D kinematicPosition() const;
+    void setKinematicPosition(const QVector3D &position);
+    QQuaternion kinematicRotation() const;
+    void setKinematicRotation(const QQuaternion &rotation);
+    QVector3D kinematicEulerRotation() const;
+    void setKinematicEulerRotation(const QVector3D &eulerRotation);
+    QVector3D kinematicPivot() const;
+    void setKinematicPivot(const QVector3D &pivot);
+
     Q_INVOKABLE QVector3D getLinearVelocity() const;
     Q_INVOKABLE void setLinearVelocity(const QVector3D &linearVelocity);
     Q_INVOKABLE QVector3D getAngularVelocity() const;
@@ -123,6 +145,7 @@ public:
 
     Q_INVOKABLE float getInverseMass() const;
     Q_INVOKABLE QVector3D getCenterOfMassPosition() const;
+    Q_INVOKABLE QVector3D getCenterOfMass() const;
 
     Q_INVOKABLE void activate();
     Q_INVOKABLE void deactivate();
@@ -139,7 +162,7 @@ public:
     Q_INVOKABLE void addImpulse(const QVector3D &impulse, const QVector3D &position);
     Q_INVOKABLE void addAngularImpulse(const QVector3D &angularImpulse);
 
-    Q_INVOKABLE void moveKinematic(const QVector3D &targetPosition, const QQuaternion &targetRotation, float deltaTime);
+    Q_INVOKABLE void reset(const QVector3D &position, const QVector3D &eulerRotation);
 
 signals:
     void bodyIDChanged(int bodyID);
@@ -156,12 +179,20 @@ signals:
     void overrideMassPropertiesChanged(OverrideMassProperties overrideMassProperties);
     void massChanged(float mass);
     void inertiaChanged(const QMatrix4x4 &inertia);
+    void offsetCenterOfMassChanged(const QVector3D &offsetCenterOfMass);
 
+    void maxLinearVelocityChanged(float maxLinearVelocity);
+    void maxAngularVelocityChanged(float maxAngularVelocity);
     void frictionChanged(float friction);
     void restitutionChanged(float restitution);
     void linearDampingChanged(float linearDamping);
     void angularDampingChanged(float angularDamping);
     void gravityFactorChanged(float gravityFactor);
+
+    void kinematicPositionChanged(const QVector3D &position);
+    void kinematicRotationChanged(const QQuaternion &rotation);
+    void kinematicEulerRotationChanged(const QVector3D &eulerRotation);
+    void kinematicPivotChanged(const QVector3D &pivot);
 
     void bodyContact(AbstractPhysicsBody *body);
     void bodyEntered(AbstractPhysicsBody *body);
@@ -170,11 +201,8 @@ signals:
 protected:
     void updateJoltObject() override;
     void cleanup() override;
+    void preSync(float deltaTime, QHash<QQuick3DNode *, QMatrix4x4> &transformCache) override;
     void sync() override;
-
-private slots:
-    void handleScenePositionChanged();
-    void handleSceneRotationChanged();
 
 private:
     JPH::EActivation getActivationForMotionType() const;
@@ -188,8 +216,15 @@ private:
     OverrideMassProperties m_overrideMassProperties = OverrideMassProperties::CalculateMassAndInertia;
     float m_mass = 0.0f;
     QMatrix4x4 m_inertia;
+    QVector3D m_offsetCenterOfMass;
 
     bool m_usedInSimulation = true;
+
+    QVector3D m_kinematicPosition;
+    RotationData m_kinematicRotation;
+    QVector3D m_kinematicPivot;
+
+    bool m_moveKinematicNeedsReset = false;
 
     int m_bodyID = -1;
     JPH::Body *m_body = nullptr;

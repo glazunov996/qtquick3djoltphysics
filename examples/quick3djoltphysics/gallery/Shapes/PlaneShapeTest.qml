@@ -53,18 +53,6 @@ Item {
         shiftSpeed: 0.3
     }
 
-    Component.onCompleted: {
-        const normal = Qt.vector3d(0.1, 1.0, 0);
-
-        const yaw = Math.atan2(normal.x, normal.z);
-        const pitch = Math.atan2(-normal.y, Math.sqrt(normal.x * normal.x + normal.z * normal.z));
-
-        const x = pitch * (180 / Math.PI) + 90;
-        const y = yaw * (180 / Math.PI) - 90;
-
-        console.log(x, y)
-    }
-
     View3D {
         id: viewport
         anchors.fill: parent
@@ -95,24 +83,26 @@ Item {
             shadowMapQuality: Light.ShadowMapQualityVeryHigh
         }
 
-        Body {
-            shape: PlaneShape {
-                extent: 200
-            }
-            objectLayer: nonMoving
-            motionType: Body.Static
-            position: Qt.vector3d(0, 0, 0)
+        Node {
             eulerRotation.z: -5.7
-            Model {
-                source: "#Rectangle"
-                materials: PrincipledMaterial {
-                    baseColor: "white"
-                    metalness: 0.5
-                    roughness: 0.1
+            Body {
+                shape: PlaneShape {
+                    extent: 200
                 }
-                castsShadows: false
-                scale: Qt.vector3d(2, 2, 0.01)
-                eulerRotation.x: -90
+                objectLayer: nonMoving
+                motionType: Body.Static
+                position: Qt.vector3d(0, 0, 0)
+                eulerRotation: Qt.vector3d(-90, 0, 0)
+                Model {
+                    source: "#Rectangle"
+                    materials: PrincipledMaterial {
+                        baseColor: "white"
+                        metalness: 0.5
+                        roughness: 0.1
+                    }
+                    castsShadows: false
+                    scale: Qt.vector3d(2, 2, 0.01)
+                }
             }
         }
 

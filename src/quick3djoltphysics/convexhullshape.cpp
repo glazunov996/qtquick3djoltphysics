@@ -4,9 +4,6 @@
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
-#include <Jolt/Physics/Collision/Shape/ScaledShape.h>
-#include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
-#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 ConvexHullShape::ConvexHullShape(QQuick3DNode *parent) : MeshShape(parent)
 {
@@ -24,5 +21,5 @@ void ConvexHullShape::createJoltShape()
         return;
 
     auto shapeResult = convexHullShapeSettings->Create();
-    m_shape = shapeResult.Get();
+    m_joltShape = shapeResult.Get();
 }

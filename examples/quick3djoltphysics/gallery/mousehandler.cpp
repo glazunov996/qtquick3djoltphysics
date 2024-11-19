@@ -10,16 +10,16 @@ MouseHandler::MouseHandler(QObject *parent) : QObject(parent)
 
 void MouseHandler::grabMouse(QQuickWindow *window)
 {
-    window->setMouseGrabEnabled(true);
-    QGuiApplication::setOverrideCursor(QCursor(Qt::BlankCursor));
+    //window->setMouseGrabEnabled(true);
+    //QGuiApplication::setOverrideCursor(QCursor(Qt::BlankCursor));
     m_lastMousePos = QCursor::pos();
     m_grabMousePos = m_lastMousePos;
 }
 
 void MouseHandler::releaseMouse(QQuickWindow *window)
 {
-    window->setMouseGrabEnabled(false);
-    QGuiApplication::setOverrideCursor(QCursor(Qt::ArrowCursor));
+    //window->setMouseGrabEnabled(false);
+    //QGuiApplication::setOverrideCursor(QCursor(Qt::ArrowCursor));
     QCursor::setPos(m_grabMousePos.toPoint());
 }
 

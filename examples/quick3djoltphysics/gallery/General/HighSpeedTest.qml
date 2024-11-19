@@ -114,7 +114,6 @@ Item {
             id: dominoBlockComponent
             Body {
                 id: body
-                property alias density: boxShape.density
                 shape: BoxShape {
                     id: boxShape
                     extents: Qt.vector3d(1.8, 2.0, 0.2)

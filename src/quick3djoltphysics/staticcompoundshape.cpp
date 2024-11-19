@@ -32,7 +32,7 @@ void StaticCompoundShape::createJoltShape()
     }
 
     auto shapeResult = staticCompoundSettings.Create();
-    m_shape = shapeResult.Get();
+    m_joltShape = shapeResult.Get();
 }
 
 void StaticCompoundShape::qmlAppendShape(QQmlListProperty<AbstractShape> *list, AbstractShape *shape)
@@ -42,25 +42,15 @@ void StaticCompoundShape::qmlAppendShape(QQmlListProperty<AbstractShape> *list, 
     StaticCompoundShape *self = static_cast<StaticCompoundShape *>(list->object);
     self->m_shapes.push_back(shape);
 
-    shape->m_isCompounded = true;
-
     connect(shape, &QObject::destroyed, self, [self](QObject *shape) {
         self->m_shapes.removeAll(static_cast<AbstractShape *>(shape));
     });
 
-    if (shape->parentItem() == nullptr) {
-        QQuick3DObject *parentItem = qobject_cast<QQuick3DObject *>(shape->parent());
-        if (parentItem) {
-            shape->setParentItem(parentItem);
-        } else {
-            const auto &scenManager = QQuick3DObjectPrivate::get(self)->sceneManager;
-            if (scenManager)
-                QQuick3DObjectPrivate::refSceneManager(shape, *scenManager);
-        }
-    }
+    connect(shape, &AbstractShape::changed, self, [self] {
+        self->handleShapeChange();
+    });
 
-    self->updateJoltShape();
-    emit self->changed();
+    self->handleShapeChange();
 }
 
 AbstractShape *StaticCompoundShape::qmlShapeAt(QQmlListProperty<AbstractShape> *list, qsizetype index)
@@ -78,15 +68,9 @@ qsizetype StaticCompoundShape::qmlShapeCount(QQmlListProperty<AbstractShape> *li
 void StaticCompoundShape::qmlClearShapes(QQmlListProperty<AbstractShape> *list)
 {
     StaticCompoundShape *self = static_cast<StaticCompoundShape *>(list->object);
-    for (auto *shape : std::as_const(self->m_shapes)) {
-        if (shape->parentItem() == nullptr)
-            QQuick3DObjectPrivate::get(shape)->derefSceneManager();
+    for (auto *shape : std::as_const(self->m_shapes))
         shape->disconnect(self);
-        shape->m_isCompounded = false;
-    }
 
     self->m_shapes.clear();
-
-    self->updateJoltShape();
-    emit self->changed();
+    self->handleShapeChange();
 }

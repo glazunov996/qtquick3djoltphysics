@@ -124,7 +124,9 @@ public:
     Q_INVOKABLE void extendedUpdate(float deltaTime, const QVector3D &gravity, ExtendedUpdateSettings *updateSettings, int broadPhaseLayerFilter, int objectLayerFilter);
     Q_INVOKABLE void refreshContacts(int broadPhaseLayerFilter, int objectLayerFilter);
     Q_INVOKABLE void updateGroundVelocity();
-    Q_INVOKABLE bool setShape(AbstractShape *shape, AbstractShape *innerShape, float maxPenetrationDepth, int broadPhaseLayerFilter, int objectLayerFilter);
+    Q_INVOKABLE bool setShape(float maxPenetrationDepth, int broadPhaseLayerFilter, int objectLayerFilter);
+
+    Q_INVOKABLE void teleport(const QVector3D &position);
 
 signals:
     void supportingVolumeChanged(const QVector4D &supportingVolume);
@@ -156,10 +158,10 @@ protected:
 
 private slots:
     void handleUpChanged();
-    void handleScenePositionChanged();
-    void handleSceneRotationChanged();
 
 private:
+    bool getTransformedJoltShapes(JPH::Ref<JPH::Shape> &shape, JPH::Ref<JPH::Shape> &innerBodyShape);
+
     QVector4D m_supportingVolume;
     float m_maxSlopeAngle = 50.0;
     QVector3D m_shapeOffset;
@@ -167,7 +169,6 @@ private:
     AbstractCharacterContactListener *m_characterContactListener = nullptr;
     int m_innerBodyID = -1;
     AbstractShape *m_innerBodyShape = nullptr;
-    QMetaObject::Connection m_innerBodyShapeSignalConnection;
 
     JPH::CharacterVirtual *m_character = nullptr;
     JPH::CharacterVirtualSettings m_characterSettings;

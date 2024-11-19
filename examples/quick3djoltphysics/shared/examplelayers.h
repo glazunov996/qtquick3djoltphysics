@@ -6,7 +6,6 @@
 class ExampleObjectLayerPairFilter : public AbstractObjectLayerPairFilter
 {
     Q_OBJECT
-    QML_NAMED_ELEMENT(ExampleObjectLayerPairFilter)
 public:
     ExampleObjectLayerPairFilter() = default;
 
@@ -16,7 +15,6 @@ public:
 class ExampleBroadPhaseLayer : public AbstractBroadPhaseLayer
 {
     Q_OBJECT
-    QML_NAMED_ELEMENT(ExampleBroadPhaseLayer)
 public:
     ExampleBroadPhaseLayer();
 
@@ -30,7 +28,6 @@ private:
 class ExampleObjectVsBroadPhaseLayerFilter : public AbstractObjectVsBroadPhaseLayerFilter
 {
     Q_OBJECT
-    QML_NAMED_ELEMENT(ExampleObjectVsBroadPhaseLayerFilter)
 public:
     ExampleObjectVsBroadPhaseLayerFilter() = default;
 

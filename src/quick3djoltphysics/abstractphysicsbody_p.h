@@ -8,6 +8,8 @@
 #include <QtQuick3D/private/qquick3dnode_p.h>
 #include <QtQml/QQmlEngine>
 
+#include <QtQuick3DUtils/private/qssgutils_p.h>
+
 class Q_QUICK3DJOLTPHYSICS_EXPORT AbstractPhysicsBody : public AbstractPhysicsNode
 {
     Q_OBJECT
@@ -25,9 +27,12 @@ signals:
     void shapeChanged(AbstractShape *shape);
 
 protected:
+    void cleanup() override;
+
     AbstractShape *m_shape = nullptr;
+
+private:
     QMetaObject::Connection m_shapeSignalConnection;
-    bool m_shapeDirty = false;
 };
 
 #endif // ABSTRACTPHYSICSBODY_P_H

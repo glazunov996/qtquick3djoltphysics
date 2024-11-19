@@ -10,7 +10,7 @@ class Mesh;
 class Q_QUICK3DJOLTPHYSICS_EXPORT MeshShape : public AbstractShape
 {
     Q_OBJECT
-    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged REVISION(6, 5))
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QQuick3DGeometry *geometry READ geometry WRITE setGeometry NOTIFY geometryChanged)
     Q_PROPERTY(float activeEdgeCosThresholdAngle READ activeEdgeCosThresholdAngle WRITE setActiveEdgeCosThresholdAngle NOTIFY activeEdgeCosThresholdAngleChanged)
     QML_NAMED_ELEMENT(MeshShape)

@@ -26,6 +26,9 @@ Item {
     readonly property real characterHeightStanding: 1.35
     readonly property real characterRadiusStanding: 0.3
 
+    readonly property real characterHeightCrouching: 0.8
+    readonly property real characterRadiusCrouching: 0.3
+
     property bool controlMovementDuringJump: true
     property real characterSpeed: 6.0
     property real jumpSpeed: 4.0
@@ -173,6 +176,14 @@ Item {
         camera: camera
         speed: characterSpeed
         shiftSpeed: characterSpeed * 3
+        onCrouchActiveChanged: {
+            if (characterController.crouchActive) {
+                character.shape = crouchingCapsuleShape;
+            } else {
+                character.shape = capsuleShape;
+            }
+            character.setShape(1.5 * 0.02);
+        }
     }
 
     View3D {
@@ -199,13 +210,27 @@ Item {
             position: character.position
         }
 
-        Character {
-            id: character
+        RotatedTranslatedShape {
+            id: capsuleShape
             shape: CapsuleShape {
                 height: characterHeightStanding
                 diameter: characterRadiusStanding * 2
-                position.y: characterHeightStanding / 2 + characterRadiusStanding
             }
+            position: Qt.vector3d(0, 0.5 * characterHeightStanding + characterRadiusStanding, 0)
+        }
+
+        RotatedTranslatedShape {
+            id: crouchingCapsuleShape
+            shape: CapsuleShape {
+                height: characterHeightCrouching
+                diameter: characterRadiusCrouching * 2
+            }
+            position: Qt.vector3d(0, 0.5 * characterHeightCrouching + characterRadiusCrouching, 0)
+        }
+
+        Character {
+            id: character
+            shape: capsuleShape
             layer: moving
             friction: 0.5
             maxSlopeAngle: 45
@@ -213,7 +238,7 @@ Item {
             Model {
                 eulerRotation.z: -90
                 geometry: CapsuleGeometry {
-                    height: characterHeightStanding
+                    height: !characterController.crouchActive ? characterHeightStanding : characterHeightCrouching
                     diameter: characterRadiusStanding * 2
                 }
                 materials: PrincipledMaterial {

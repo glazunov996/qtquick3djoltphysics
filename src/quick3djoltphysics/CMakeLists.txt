@@ -31,6 +31,7 @@ qt_internal_add_qml_module(Quick3DJoltPhysics
         emptyshape_p.h emptyshape.cpp
         fixedconstraint_p.h fixedconstraint.cpp
         groupfiltertable_p.h groupfiltertable.cpp
+        heightfieldshape_p.h heightfieldshape.cpp
         hingeconstraint_p.h hingeconstraint.cpp
         meshshape_p.h meshshape.cpp
         physicslayers.h physicslayers.cpp
@@ -43,6 +44,7 @@ qt_internal_add_qml_module(Quick3DJoltPhysics
         qtquick3djoltphysicsglobal.h
         qtquick3djoltphysicsglobal_p.h
         raycastresult_p.h raycastresult.cpp
+        rotatedtranslatedshape_p.h rotatedtranslatedshape.cpp
         sphereshape_p.h sphereshape.cpp
         springsettings_p.h springsettings.cpp
         staticcompoundshape_p.h staticcompoundshape.cpp

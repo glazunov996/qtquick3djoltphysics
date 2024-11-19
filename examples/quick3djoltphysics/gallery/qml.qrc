@@ -47,7 +47,7 @@
         <file>Shapes/CapsuleShapeTest.qml</file>
         <file>Shapes/BoxShapeTest.qml</file>
         <file>Shapes/PlaneShapeTest.qml</file>
-        <file>Quick3DPhysics/Simple.qml</file>
+        <file>Shapes/HeightFieldShapeTest.qml</file>
         <file>meshes/Cube.mesh</file>
         <file>images/qt_logo.png</file>
         <file>images/icon_settings.png</file>
@@ -55,6 +55,7 @@
         <file>images/checkers2.png</file>
         <file>images/icon_pause.png</file>
         <file>images/arrow_icon.png</file>
+        <file>images/heightmap1.png</file>
         <file>qmldir</file>
     </qresource>
 </RCC>

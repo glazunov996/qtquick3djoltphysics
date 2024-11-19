@@ -8,7 +8,6 @@ class ExampleCharacterContactListener : public AbstractCharacterContactListener
     Q_OBJECT
     Q_PROPERTY(QList<int> rampBlockIDs READ rampBlockIDs WRITE setRampBlockIDs NOTIFY rampBlockIDsChanged)
     Q_PROPERTY(bool allowSliding READ allowSliding WRITE setAllowSliding NOTIFY allowSlidingChanged)
-    QML_NAMED_ELEMENT(ExampleCharacterContactListener)
 public:
     explicit ExampleCharacterContactListener(QObject *parent = nullptr);
 

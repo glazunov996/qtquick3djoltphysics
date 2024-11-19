@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(example_simple LANGUAGES CXX)
+project(example_gallery LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -7,20 +7,31 @@ if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
-set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/quick3djoltphysics/gallery")
+set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/quick3djoltphysics/${PROJECT_NAME}")
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick Quick3D Quick3DJoltPhysics)
 
-qt_add_executable(gallery
+qt_add_executable(${PROJECT_NAME}
     main.cpp
+    ../shared/examplecharactercontactlistener.cpp
+    ../shared/examplecharactercontactlistener.h
+    ../shared/examplecontactlistener.cpp
+    ../shared/examplecontactlistener.h
+    ../shared/examplegeometry.cpp
+    ../shared/examplegeometry.h
+    ../shared/examplelayers.cpp
+    ../shared/examplelayers.h
+    ../shared/examplesensorcontactlistener.cpp
+    ../shared/examplesensorcontactlistener.h
+    ../shared/shared.h
 )
 
-set_target_properties(gallery PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(gallery PUBLIC
+target_link_libraries(${PROJECT_NAME} PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Quick
@@ -32,25 +43,21 @@ set_source_files_properties(AppSettings.qml PROPERTIES
     QT_QML_SINGLETON_TYPE TRUE
 )
 
-qt_add_qml_module(gallery
+qt_add_qml_module(${PROJECT_NAME}
     URI Example
     VERSION 1.0
     QML_FILES
         main.qml
     SOURCES
-        examplelayers.cpp examplelayers.h
-        examplegeometry.cpp examplegeometry.h
-        examplecontactlistener.h examplecontactlistener.cpp
-        examplesensorcontactlistener.h examplesensorcontactlistener.cpp
-        examplecharactercontactlistener.h examplecharactercontactlistener.cpp
         mousehandler.h mousehandler.cpp
         RESOURCES
             images/arrow_icon.png
-            images/icon_play.png
+            images/checkers2.png
+            images/heightmap1.png
             images/icon_pause.png
+            images/icon_play.png
             images/icon_settings.png
             images/qt_logo.png
-            images/checkers2.png
             meshes/Cube.mesh
     NO_RESOURCE_TARGET_PATH
     QML_FILES AppSettings.qml
@@ -86,6 +93,7 @@ qt_add_qml_module(gallery
     QML_FILES Shapes/CapsuleShapeTest.qml
     QML_FILES Shapes/ConvexHullShapeTest.qml
     QML_FILES Shapes/CylinderShapeTest.qml
+    QML_FILES Shapes/HeightFieldShapeTest.qml
     QML_FILES Shapes/MeshShapeTest.qml
     QML_FILES Shapes/OffsetCenterOfMassShapeTest.qml
     QML_FILES Shapes/SphereShapeTest.qml
@@ -99,10 +107,9 @@ qt_add_qml_module(gallery
     QML_FILES CustomSlider.qml
     QML_FILES Constraints/SwingTwistConstraintTest.qml
     QML_FILES Constraints/FixedConstraintTest.qml
-    QML_FILES Quick3DPhysics/Simple.qml
 )
 
-install(TARGETS gallery
+install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
     LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"

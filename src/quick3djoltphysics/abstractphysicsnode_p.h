@@ -25,14 +25,13 @@ public:
 
 protected:
     virtual void updateJoltObject() = 0;
-    virtual void cleanup() {}
-    virtual void sync() {}
+    virtual void cleanup();
+    virtual void preSync(float deltaTime, QHash<QQuick3DNode *, QMatrix4x4> &transformCache);
+    virtual void sync();
 
     JPH::PhysicsSystem *m_jolt = nullptr;
     JPH::TempAllocator *m_tempAllocator = nullptr;
     JPH::BodyInterface *m_bodyInterface = nullptr;
-
-    bool m_syncing = false;
 
 private:
     void init(JPH::PhysicsSystem *jolt, JPH::TempAllocator *tempAllocator);

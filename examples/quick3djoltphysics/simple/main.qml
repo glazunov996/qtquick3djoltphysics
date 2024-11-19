@@ -1,16 +1,16 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick3D
+import QtQuick3D.Helpers
 import QtQuick3D.JoltPhysics
 import QtQuick3D.JoltPhysics.Helpers
 import Example
 
-import ".."
-
-Item {
-    id: mainWindow
-
-    anchors.fill: parent
+Window {
+    width: 640
+    height: 480
+    visible: true
+    title: qsTr("Qt Quick 3D Jolt Physics - Simple")
 
     readonly property int nonMoving : 0
     readonly property int moving: 1
@@ -20,38 +20,11 @@ Item {
     PhysicsSystem {
         id: physicsSystem
         scene: viewport.scene
-        running: AppSettings.playPhysics
+        running: true
         gravity: Qt.vector3d(0, -981, 0)
-        numThreads: AppSettings.maxConcurrentJobs
-        collisionSteps: AppSettings.collisionSteps
         objectLayerPairFilter: ExampleObjectLayerPairFilter {}
         broadPhaseLayer: ExampleBroadPhaseLayer {}
         objectVsBroadPhaseLayerFilter: ExampleObjectVsBroadPhaseLayerFilter {}
-        settings: PhysicsSettings {
-            numVelocitySteps: Math.round(AppSettings.numVelocitySteps)
-            numPositionSteps: Math.round(AppSettings.numPositionSteps)
-            baumgarte: AppSettings.baumgarte
-            speculativeContactDistance: AppSettings.speculativeContactDistance
-            penetrationSlop: AppSettings.penetrationSlop
-            linearCastThreshold: AppSettings.linearCastThreshold
-            minVelocityForRestitution: AppSettings.minVelocityForRestitution
-            timeBeforeSleep: AppSettings.timeBeforeSleep
-            pointVelocitySleepThreshold: AppSettings.pointVelocitySleepThreshold
-            deterministicSimulation: AppSettings.deterministicSimulation
-            constraintWarmStart: AppSettings.constraintWarmStart
-            useBodyPairContactCache: AppSettings.useBodyPairContactCache
-            useManifoldReduction: AppSettings.useManifoldReduction
-            useLargeIslandSplitter: AppSettings.useLargeIslandSplitter
-            allowSleeping: AppSettings.allowSleeping
-            checkActiveEdges: AppSettings.checkActiveEdges
-        }
-    }
-
-    SampleCameraController {
-        camera: camera
-        physicsSystem: physicsSystem
-        speed: 1
-        shiftSpeed: 3
     }
 
     View3D {
@@ -59,7 +32,7 @@ Item {
         anchors.fill: parent
 
         environment: SceneEnvironment {
-            clearColor: "#191970"
+            clearColor: "#d6dbdf"
             backgroundMode: SceneEnvironment.Color
         }
 
@@ -67,7 +40,7 @@ Item {
             id: camera
             position: Qt.vector3d(-200, 100, 500)
             eulerRotation: Qt.vector3d(-20, -20, 0)
-            clipFar: 50000
+            clipFar: 5000
             clipNear: 1
         }
 
@@ -81,7 +54,7 @@ Item {
 
         Body {
             position: Qt.vector3d(0, -100, 0)
-            eulerRotation: Qt.vector3d(0, 0, 0)
+            eulerRotation: Qt.vector3d(-90, 0, 0)
             shape: PlaneShape {
                 extent: 1000
             }
@@ -95,7 +68,6 @@ Item {
                 }
                 castsShadows: false
                 receivesShadows: true
-                eulerRotation.x: -90
             }
         }
 
@@ -153,6 +125,4 @@ Item {
             }
         }
     }
-
-    SettingsView {}
 }

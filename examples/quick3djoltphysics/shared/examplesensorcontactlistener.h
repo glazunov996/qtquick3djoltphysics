@@ -1,23 +1,16 @@
-#ifndef EXAMPLECONTACTLISTENER_P_H
-#define EXAMPLECONTACTLISTENER_P_H
+#ifndef EXAMPLESENSORCONTACTLISTENER_H
+#define EXAMPLESENSORCONTACTLISTENER_H
 
 #include <QtQuick3DJoltPhysics/contactlistener.h>
 #include <QObject>
 #include <QList>
+#include <QMutex>
 
-class ExampleContactListener : public AbstractContactListener
+class ExampleSensorContactListener : public AbstractContactListener
 {
     Q_OBJECT
-    Q_PROPERTY(QList<int> bodyIDs READ bodyIDs WRITE setBodyIDs NOTIFY bodyIDsChanged)
-    QML_NAMED_ELEMENT(ExampleContactListener)
 public:
-    explicit ExampleContactListener(QObject *parent = nullptr);
-
-    QList<int> bodyIDs() const;
-    void setBodyIDs(const QList<int> &bodyIDs);
-
-signals:
-    void bodyIDsChanged(const QList<int> &bodyIDs);
+    explicit ExampleSensorContactListener(QObject *parent = nullptr);
 
 public:
     ValidateResult contactValidate(const BodyContact &bodyContact, const QVector3D &baseOffset, const CollideShapeResult &collisionResult) override;
@@ -25,8 +18,18 @@ public:
     void contactPersisted(const BodyContact &bodyContact, const ContactManifold &manifold, ContactSettings &settings) override;
     void contactRemoved(const BodyContact &bodyContact) override;
 
+    struct BodyAndCount {
+        int bodyID;
+        unsigned int count;
+
+        bool operator < (const BodyAndCount &rhs) const { return bodyID < rhs.bodyID; }
+    };
+
+    Q_INVOKABLE QList<int> getBodiesInSensor(int sensor) const;
+
 private:
-    QList<int> m_bodyIDs;
+    QHash<int, QList<BodyAndCount>> m_bodiesInSensor;
+    mutable QMutex m_mutex;
 };
 
-#endif // EXAMPLECONTACTLISTENER_P_H
+#endif // EXAMPLESENSORCONTACTLISTENER_H

@@ -13,7 +13,6 @@ class Q_QUICK3DJOLTPHYSICS_EXPORT AbstractShape : public QQuick3DNode
 {
     Q_OBJECT
     Q_PROPERTY(float density READ density WRITE setDensity NOTIFY densityChanged)
-    Q_PROPERTY(QVector3D offsetCenterOfMass READ offsetCenterOfMass WRITE setOffsetCenterOfMass NOTIFY offsetCenterOfMassChanged)
     QML_NAMED_ELEMENT(Shape)
     QML_UNCREATABLE("abstract interface")
 public:
@@ -23,38 +22,28 @@ public:
     float density() const;
     void setDensity(float density);
 
-    QVector3D offsetCenterOfMass() const;
-    void setOffsetCenterOfMass(const QVector3D &offsetCenterOfMass);
-
-    Q_INVOKABLE QVector3D getCenterOfMass();
-
     virtual JPH::Ref<JPH::Shape> getJoltShape();
 
 signals:
-    void densityChanged(float density);
-    void offsetCenterOfMassChanged(const QVector3D &offsetCenterOfMass);
     void changed();
+    void densityChanged(float density);
 
 protected:
     virtual void createJoltShape() = 0;
     void updateJoltShape();
+    void handleShapeChange();
 
-    JPH::Ref<JPH::Shape> m_shape = nullptr;
+    JPH::Ref<JPH::Shape> m_innerJoltShape = nullptr;
+    JPH::Ref<JPH::Shape> m_joltShape = nullptr;
     bool m_shapeInitialized = false;
-    bool m_isCompounded = false;
-
-private slots:
-    void handleRotationPositionChanged();
-    void handleScaleChanged();
 
 private:
-    friend class StaticCompoundShape;
+    void updateJoltShapeDensity();
 
     float m_density = 1000.0f;
-    QVector3D m_offsetCenterOfMass;
-    bool m_offsetCenterOfMassDirty = false;
-    bool m_rotationPositionDirty = false;
-    bool m_scaleDirty = false;
+
+    friend class Body;
+    friend class StaticCompoundShape;
 };
 
 #endif // ABSTRACTSHAPE_P_H

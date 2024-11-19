@@ -36,6 +36,8 @@ Item {
 
     property alias acceptedButtons: tapHandler.acceptedButtons
 
+    property bool crouchActive: false
+
     TapHandler {
         id: tapHandler
         onTapped: mousePressed();
@@ -94,12 +96,12 @@ Item {
         shiftDown = false
     }
 
-    function controlPressed() {
-        status.controlDown = true
+    function sneakPressed() {
+        crouchActive = true
     }
 
-    function controlReleased() {
-        status.controlDown = false
+    function sneakReleased() {
+        crouchActive = false
     }
 
     function escapePressed() {
@@ -130,7 +132,7 @@ Item {
             shiftPressed();
             break;
         case Qt.Key_Control:
-            controlPressed();
+            sneakPressed();
             break
         case Qt.Key_Escape:
             escapePressed();
@@ -139,6 +141,7 @@ Item {
             AppSettings.playPhysics = !AppSettings.playPhysics;
             break;
         case Qt.Key_R:
+            status.useMouse = false;
             AppSettings.testRestartNeeded()
             break;
         }
@@ -167,7 +170,7 @@ Item {
             shiftReleased();
             break;
         case Qt.Key_Control:
-            controlReleased();
+            sneakReleased();
             break;
         }
     }
@@ -178,55 +181,10 @@ Item {
         onTriggered: status.processInput(frameTime * 100)
     }
 
-    Component {
-        id: markerComponent
-        Model {
-            source: "#Sphere"
-            materials: DefaultMaterial {
-                diffuseColor: "red"
-                lighting: Light.None
-            }
-            scale: Qt.vector3d(0.002, 0.002, 0.002)
-            castsShadows: false
-            visible: false
-        }
-    }
-
-    Component {
-        id: dragConstraintComponent
-        DistanceConstraint {
-            limitsSpringSettings: SpringSettings {
-                frequency: 2.0
-                damping: 1.0
-            }
-            minDistance: 0
-            maxDistance: 0
-        }
-    }
-
-    Component {
-        id: dragAnchorComponent
-        Body {
-            shape: SphereShape {
-                diameter: 0.02
-            }
-            motionType: Body.Static
-            usedInSimulation: false
-            objectLayer: 0
-        }
-    }
-
     QtObject {
         id: status
 
-        property bool controlDown: false
         property bool useMouse: false
-
-        property Node marker: null
-        property Node dragConstraint: null
-        property Node dragAnchor: null
-
-        property var hit: undefined
 
         onUseMouseChanged: {
             if (useMouse)

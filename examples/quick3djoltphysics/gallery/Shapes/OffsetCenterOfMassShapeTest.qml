@@ -113,12 +113,12 @@ Item {
             id: leftSphere
             shape: SphereShape {
                 diameter: 2
-                offsetCenterOfMass: Qt.vector3d(-1, 0, 0)
             }
             objectLayer: moving
             motionType: Body.Dynamic
             position: Qt.vector3d(-5, 5, 0)
             friction: 1.0
+            offsetCenterOfMass: Qt.vector3d(-1, 0, 0)
             Model {
                 source: "#Sphere"
                 receivesReflections: true
@@ -166,12 +166,12 @@ Item {
             id: rightSphere
             shape: SphereShape {
                 diameter: 2
-                offsetCenterOfMass: Qt.vector3d(1, 0, 0)
             }
             objectLayer: moving
             motionType: Body.Dynamic
             position: Qt.vector3d(5, 5, 0)
             friction: 1.0
+            offsetCenterOfMass: Qt.vector3d(1, 0, 0)
             Model {
                 source: "#Sphere"
                 receivesReflections: true
@@ -193,11 +193,11 @@ Item {
             id: sphereBody1
             shape: SphereShape {
                 diameter: 2
-                offsetCenterOfMass: Qt.vector3d(-3, 0, 0)
             }
             objectLayer: moving
             motionType: Body.Dynamic
             position: Qt.vector3d(-5, 5, 10)
+            offsetCenterOfMass: Qt.vector3d(-3, 0, 0)
             gravityFactor: 0
             linearDamping: 0
             angularDamping: 0
@@ -225,11 +225,11 @@ Item {
             id: sphereBody2
             shape: SphereShape {
                 diameter: 2
-                offsetCenterOfMass: Qt.vector3d(-3, 0, 0)
             }
             objectLayer: moving
             motionType: Body.Dynamic
             position: Qt.vector3d(5, 5, 10)
+            offsetCenterOfMass: Qt.vector3d(-3, 0, 0)
             gravityFactor: 0
             linearDamping: 0
             angularDamping: 0

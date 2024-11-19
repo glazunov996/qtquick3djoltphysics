@@ -19,6 +19,12 @@ void AbstractPhysicsNode::componentComplete()
     PhysicsSystem::registerPhysicsNode(this);
 }
 
+void AbstractPhysicsNode::cleanup() { }
+
+void AbstractPhysicsNode::preSync(float /*deltaTime*/, QHash<QQuick3DNode *, QMatrix4x4> & /*transformCache*/) { }
+
+void AbstractPhysicsNode::sync() { }
+
 void AbstractPhysicsNode::init(JPH::PhysicsSystem *jolt, JPH::TempAllocator *tempAllocator)
 {
     Q_ASSERT(jolt);

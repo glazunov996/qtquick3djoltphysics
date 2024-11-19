@@ -29,5 +29,5 @@ void SphereShape::setDiameter(float diameter)
 
 void SphereShape::createJoltShape()
 {
-    m_shape = new JPH::SphereShape(m_diameter * 0.5f);
+    m_joltShape = new JPH::SphereShape(m_diameter * 0.5f);
 }

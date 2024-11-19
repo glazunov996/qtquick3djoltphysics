@@ -429,6 +429,9 @@ void MeshManager::releaseMesh(Mesh *mesh)
         return;
 
     qCDebug(lcQuick3dJoltPhysics()) << "deleting mesh" << mesh;
+    erase_if(g_sourceMeshHash, [mesh](std::pair<const QString &, Mesh *&> h) {
+        return h.second == mesh;
+    });
     erase_if(m_geometryMeshHash, [mesh](std::pair<QQuick3DGeometry *, Mesh *&> h) {
         return h.second == mesh;
     });
@@ -443,6 +446,8 @@ MeshShape::~MeshShape()
 {
     if (m_mesh)
         MeshManager::releaseMesh(m_mesh);
+
+    m_mesh = nullptr;
 }
 
 const QUrl &MeshShape::source() const
@@ -537,5 +542,5 @@ void MeshShape::createJoltShape()
     meshShapeSettings->mActiveEdgeCosThresholdAngle = m_activeEdgeCosThresholdAngle;
 
     auto shapeResult = meshShapeSettings->Create();
-    m_shape = shapeResult.Get();
+    m_joltShape = shapeResult.Get();
 }

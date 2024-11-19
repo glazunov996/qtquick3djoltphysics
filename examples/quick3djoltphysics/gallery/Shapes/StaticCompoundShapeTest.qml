@@ -118,6 +118,7 @@ Item {
                         CapsuleShape {
                             height: 10
                             diameter: 2
+                            eulerRotation.z: 90
                         },
                         SphereShape {
                             diameter: 4

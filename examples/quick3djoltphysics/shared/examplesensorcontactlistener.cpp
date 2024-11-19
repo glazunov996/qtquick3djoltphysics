@@ -9,6 +9,8 @@ ExampleSensorContactListener::ValidateResult ExampleSensorContactListener::conta
 
 void ExampleSensorContactListener::contactAdded(const BodyContact &bodyContact, const ContactManifold &manifold, ContactSettings &settings)
 {
+    registerBodyContact(bodyContact);
+
     int sensorID;
     int bodyID;
 

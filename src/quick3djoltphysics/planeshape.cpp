@@ -1,4 +1,5 @@
 #include "planeshape_p.h"
+#include "physicsutils_p.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Collision/Shape/PlaneShape.h>
@@ -28,5 +29,5 @@ void PlaneShape::setExtent(float extent)
 
 void PlaneShape::createJoltShape()
 {
-    m_shape = new JPH::PlaneShape(JPH::Plane(JPH::Vec3(0.0f, 1.0f, 0.0f), 0.0f), nullptr, m_extent * 0.5f);
+    m_joltShape = new JPH::PlaneShape(JPH::Plane(JPH::Vec3(0.0f, 0.0f, 1.0f), 0.0f), nullptr, m_extent * 0.5f);
 }

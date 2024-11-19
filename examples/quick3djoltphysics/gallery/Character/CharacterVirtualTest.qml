@@ -29,6 +29,9 @@ Item {
     readonly property real characterHeightStanding: 1.35
     readonly property real characterRadiusStanding: 0.3
 
+    readonly property real characterHeightCrouching: 0.8
+    readonly property real characterRadiusCrouching: 0.3
+
     property bool enableCharacterInertia: true
     property real upRotationX: 0
     property real upRotationZ: 0
@@ -151,15 +154,14 @@ Item {
     function prePhysicsUpdate(frameDelta) {
         time += frameDelta;
 
-        smoothVerticallyMovingBody.moveKinematic(Qt.vector3d(0, 2.0, 15).plus(Qt.vector3d(0, 1.75 * Math.sin(time), 0)), Qt.quaternion(1, 0, 0, 0), frameDelta);
+        smoothVerticallyMovingBody.kinematicPosition = Qt.vector3d(0, 2.0, 15).plus(Qt.vector3d(0, 1.75 * Math.sin(time), 0));
 
         rampBlocksTimeLeft -= frameDelta;
         if (rampBlocksTimeLeft < 0.0) {
             for (var i = 0; i < 4; ++i) {
                 var rampBlock = rampBlocks[i];
                 var position = Qt.vector3d(15, 2.2, 15).plus(Qt.vector3d(-3.0, 3, 1.5))
-                rampBlock.position = position.plus(Qt.vector3d(2, 0, 0).times(i));
-                rampBlock.eulerRotation = Qt.vector3d(-45, 0, 0);
+                rampBlock.reset(position.plus(Qt.vector3d(2, 0, 0).times(i)), Qt.vector3d(-45, 0, 0))
                 rampBlock.setLinearVelocity(Qt.vector3d(0, 0, 0))
             }
 
@@ -211,6 +213,16 @@ Item {
         camera: camera
         speed: characterSpeed
         shiftSpeed: characterSpeed * 3
+        onCrouchActiveChanged: {
+            if (characterController.crouchActive) {
+                character.shape = crouchingCapsuleShape;
+                character.innerBodyShape = crouchingInnerBodyCapsuleShape;
+            } else {
+                character.shape = capsuleShape;
+                character.innerBodyShape = innerBodyCapsuleShape;
+            }
+            character.setShape(1.5 * 0.02, moving, moving);
+        }
     }
 
     View3D {
@@ -237,18 +249,46 @@ Item {
             position: character.position
         }
 
-        CharacterVirtual {
-            id: character
+        RotatedTranslatedShape {
+            id: capsuleShape
             shape: CapsuleShape {
                 height: characterHeightStanding
                 diameter: characterRadiusStanding * 2
-                position.y: characterHeightStanding / 2 + characterRadiusStanding
             }
-            innerBodyShape: CapsuleShape {
-                height: characterHeightStanding * 0.9
-                diameter: characterRadiusStanding * 2 * 0.9
-                position.y: (characterHeightStanding / 2 + characterRadiusStanding) * 0.9
+            position: Qt.vector3d(0, 0.5 * characterHeightStanding + characterRadiusStanding, 0)
+        }
+
+        RotatedTranslatedShape {
+            id: innerBodyCapsuleShape
+            shape: CapsuleShape {
+                height: characterHeightStanding
+                diameter: characterRadiusStanding * 2
             }
+            position: Qt.vector3d(0, 0.5 * characterHeightStanding + characterRadiusStanding, 0)
+        }
+
+        RotatedTranslatedShape {
+            id: crouchingCapsuleShape
+            shape: CapsuleShape {
+                height: characterHeightCrouching
+                diameter: characterRadiusCrouching * 2
+            }
+            position: Qt.vector3d(0, 0.5 * characterHeightCrouching + characterRadiusCrouching, 0)
+        }
+
+        RotatedTranslatedShape {
+            id: crouchingInnerBodyCapsuleShape
+            shape: CapsuleShape {
+                height: characterHeightCrouching
+                diameter: characterRadiusCrouching * 2
+            }
+            position: Qt.vector3d(0, 0.5 * characterHeightCrouching + characterRadiusCrouching, 0)
+        }
+
+        CharacterVirtual {
+            id: character
+            shape: capsuleShape
+            innerBodyShape: innerBodyCapsuleShape
             characterContactListener: ExampleCharacterContactListener {
                 id: characterContactListener
                 onEnableSliding: (canPushCharacter, bodyID2) => {
@@ -270,7 +310,7 @@ Item {
             Model {
                 eulerRotation.z: -90
                 geometry: CapsuleGeometry {
-                    height: characterHeightStanding
+                    height: !characterController.crouchActive ? characterHeightStanding : characterHeightCrouching
                     diameter: characterRadiusStanding * 2
                 }
                 materials: PrincipledMaterial {

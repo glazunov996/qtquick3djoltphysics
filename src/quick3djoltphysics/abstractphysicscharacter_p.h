@@ -26,6 +26,9 @@ public:
         InAir
     };
     Q_ENUM(GroundState)
+
+private:
+    QVector3D m_shapePosition;
 };
 
 #endif // ABSTRACTPHYSICSCHARACTER_P_H

@@ -63,5 +63,5 @@ void CylinderShape::setConvexRadius(float convexRadius)
 
 void CylinderShape::createJoltShape()
 {
-    m_shape = new JPH::CylinderShape(m_height * 0.5f, m_diameter * 0.5f, m_convexRadius);
+    m_joltShape = new JPH::CylinderShape(m_height * 0.5f, m_diameter * 0.5f, m_convexRadius);
 }
